@@ -23,6 +23,9 @@ cron_window=300
 
 # Try to run jobs on this schedule
 cron_minute=0-59/30
+#
+# Keep running the job
+on_exit_remove=false
 
 # Arguments are:
 # 1. Sending host

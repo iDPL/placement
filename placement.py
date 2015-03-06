@@ -75,23 +75,16 @@ def iperfClient():
 ## *****************************
 
 if int(os.environ['_CONDOR_PROCNO']) == 0:
-	iperfClient()
+	try:
+		iperfClient()
+	except Exception,e:
+		print "Client had Exception: ", e
 else:
-	chirp.setJobAttr("IperfServer", None)
-	iperfServer()
-	chirp.setJobAttr("IperfServer", None)
+	try:
+		chirp.setJobAttr("IperfServer", None)
+		iperfServer()
+	except Exception,e:
+		print "Server had Exception: ", e
+		chirp.setJobAttr("IperfServer", None)
 
-#if int(os.environ['_CONDOR_PROCNO']) == 0:
-#	try:
-#		iperfClient()
-#	except Exception,e:
-#		print "Client had Exception: ", e
-#else:
-#	try:
-#		chirp.setJobAttr("IperfServer", None)
-#		iperfServer()
-#	except Exception,e:
-#		print "Server had Exception: ", e
-#		chirp.setJobAttr("IperfServer", None)
-		
 # vim: ts=4:sw=4:tw=78

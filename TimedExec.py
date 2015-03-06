@@ -66,9 +66,16 @@ def processTimeout(seconds, pid):
 		timeout.cancel()
 
 
-def runTimedCmd(timeout, cmd):
-	""" Run a command with a timeout.  returns it's output,error,and 
-		returncode. stdin is None """
+def runTimedCmd(timeout, cmd, outhandler=None, errhandler=None):
+	""" Run a command with a timeout.  
+	    Returns output,error,and returncode. 
+
+            if outhandler or errhandler are defined then these handlers
+            are called as data becomes available. Enabling handling of unlimited
+            sized output or reaction to specific output
+
+	    signatures of handlers are handler(int pid, string str)
+            stdin is None """
 
 	## create the process
 	proc = subprocess.Popen(cmd, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
@@ -97,9 +104,15 @@ def runTimedCmd(timeout, cmd):
 			for s in readable:
 				line = s.readline()
 				if s is p_out and len(line) > 0:
-					outdata.append(line)
+					if outhandler is None:
+						outdata.append(line)
+					else:
+						outhandler(proc.pid, line)
 				if s is p_err and len(line) > 0:
-					errdata.append(line)
+					if errhandler is None:
+						errdata.append(line)
+					else:
+						errhandler(proc.pid, line)	
 
 	resultcode = proc.wait()
 
@@ -107,8 +120,15 @@ def runTimedCmd(timeout, cmd):
 	## is finished, but errdata or outdata still has buffered data.
 	## Grab it here
 	for line in p_out.readlines():
-		outdata.append(line)
+		if outhandler is None:
+			outdata.append(line)
+		else:
+			outhandler(proc.pid, line)
 	for line in p_err.readlines():
-		errdata.append(line)
+		if errhandler is None:
+			errdata.append(line)
+		else:
+			errhandler(proc.pid, line)
+			
 
 	return resultcode,outdata,errdata

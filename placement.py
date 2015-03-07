@@ -6,6 +6,7 @@ import os
 import sys
 import signal
 import socket
+import time
 
 ##### Configurables
 ### IPERF ####
@@ -73,17 +74,25 @@ def iperfClient():
 ## *****************************
 ## main routine
 ## *****************************
-
+iam = socket.getfqdn()
+logfcli = "%s: iperf client %s" 
+logfsrv = "%s: iperf server %s" 
 if int(os.environ['_CONDOR_PROCNO']) == 0:
 	try:
+		chirp.ulog(logfcli % (iam,"start"))
 		iperfClient()
+		chirp.ulog(logfcli % (iam,"end"))
 	except Exception,e:
+		chirp.ulog(logfcli % (iam,"error"))
 		print "Client had Exception: ", e
 else:
 	try:
+		chirp.ulog(logfsrv % (iam,"start"))
 		chirp.setJobAttr("IperfServer", None)
+		chirp.ulog(logfsrv % (iam,"end"))
 		iperfServer()
 	except Exception,e:
+		chirp.ulog(logfsrv % (iam,"error"))
 		print "Server had Exception: ", e
 		chirp.setJobAttr("IperfServer", None)
 

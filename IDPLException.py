@@ -25,4 +25,8 @@ class CondorChirpSetException(Exception):
 	def __init__(self,src):
 		self.source = src
 	
+class CondorChirpUlogException(Exception):
+	""" If we couldn't log a message Attribute """
+	def __init__(self,src):
+		self.source = src
 	

@@ -53,4 +53,15 @@ class CondorChirp():
 		else:
 			return out 
 		
+
+	def ulog(self,message):
+		""" condor chirp to log a message """  
+
+		resultcode,out,err=TimedExec.runTimedCmd(defaultTimeout,
+			[self.executable,"ulog", "'%s'" % message])
+		if resultcode != 0:
+			raise IDPLException.CondorChirpUlogException(message)
+		else:
+			return out 
+		
 # vim: ts=4:sw=4:

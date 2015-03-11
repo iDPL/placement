@@ -25,14 +25,33 @@ serverTimeout = 120
 
 #### Chirp Setup
 chirp = CondorTools.CondorChirp()
+transferredKB = 0
+tstart = 0.0
+tend = 0.0
+
+def writeRecord(tag, src,dest,start,end,md5_equal,duration,kbytes):
+	##| source      | varchar(64)      | source node
+	##| destination | varchar(64)      | destination node
+	##| time_start  | timestamp        | start time
+	##| time_end    | timestamp        | end time
+	##| md5_equal   | tinyint(1)       | md5 validated
+	##| duration    | int(10) unsigned | transfer time (time_end-time_start)
+	logmessage = "%s,%s,%s" % (tag, src, dest)
+	logmessage += ",%f,%f,%d,%f" % (start,end,md5_equal,duration)
+	logmessage += ",%d" % (kbytes)
+	chirp.ulog(logmessage)
 
 def iperfout(pid,str):
 	""" stdout handler when running iperf under TimedExec """
+	global transferredKB
 	message = "%s(%d): %s" % (socket.getfqdn(),pid,str)
 	sys.stdout.write(message)
 	host = socket.getfqdn()
 	try:
 		if str.find("its/sec") != -1:
+			transferredKB = str.split()[-4]
+			msg = " ".join(str.split()[-2:])
+			chirp.ulog("%s: iperf %s" % (host, msg))
 			os.kill(pid,signal.SIGTERM)
 		if str.find("listening") != -1:
 			listenport = int(str.split()[-1])
@@ -67,8 +86,12 @@ def iperfClient():
 	maxtries = 12*3
 	serverInfo = chirp.getJobAttrWait("IperfServer",None,interval, maxtries)
 	host,port = serverInfo.strip("'").split()
+	tstart = time.time()
 	resultcode,output,err=TimedExec.runTimedCmd(clientTimeout,[iperfExe,
-					"-c", host, "-p", "%d" % int(port) ],iperfout, iperferr)
+					"-c", host,"-f","k","-p","%d" % int(port) ],iperfout, iperferr)
+	tend = time.time()
+	writeRecord("iperf",socket.getfqdn(),host,tstart,tend,1,tend-tstart,
+			int(transferredKB))
 
 
 ## *****************************
@@ -82,18 +105,19 @@ if int(os.environ['_CONDOR_PROCNO']) == 0:
 		chirp.ulog(logfcli % (iam,"start"))
 		iperfClient()
 		chirp.ulog(logfcli % (iam,"end"))
-	except Exception,e:
+	except Exception:
 		chirp.ulog(logfcli % (iam,"error"))
-		print "Client had Exception: ", e
+		print "Client had Exception: "
 else:
 	try:
 		chirp.ulog(logfsrv % (iam,"start"))
 		chirp.setJobAttr("IperfServer", None)
-		chirp.ulog(logfsrv % (iam,"end"))
 		iperfServer()
-	except Exception,e:
+		chirp.ulog(logfsrv % (iam,"end"))
+		chirp.setJobAttr("IperfServer", None)
+	except Exception:
 		chirp.ulog(logfsrv % (iam,"error"))
-		print "Server had Exception: ", e
+		print "Server had Exception: "
 		chirp.setJobAttr("IperfServer", None)
 
 # vim: ts=4:sw=4:tw=78

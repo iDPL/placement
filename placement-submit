@@ -19,7 +19,7 @@ LEASE=1500
 
 # A run is allowed to take this long (in seconds) to set up; otherwise
 # that run is skipped
-cron_window=300
+cron_window=60
 
 # Try to run jobs on this schedule
 cron_minute=0-59/30

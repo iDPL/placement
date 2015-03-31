@@ -56,8 +56,8 @@ def iperfout(pid,str):
 		if str.find("listening") != -1:
 			listenport = int(str.split()[-1])
 			chirp.setJobAttr("IperfServer","'%s %d'" % (host, listenport))
-	except e:
-		print e 
+	except IDPLException,e:
+		sys.stderr.write(e.message)
 
 def iperferr(pid,str):
 	""" stderr handler when running iperf under TimedExec """
@@ -79,7 +79,7 @@ def iperfServer():
 				raise TimeOutException("iperf")	
 			break
 		except PortInUseException,e:
-			sys.stderr.write("%s reported port %d is in use\n" %(e.source, e.port))
+			sys.stderr.write(e.message)
 		
 def iperfClient():
 	interval = 5

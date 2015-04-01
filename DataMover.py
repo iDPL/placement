@@ -18,6 +18,8 @@ class DataMover(object):
 		self.args = []
 		self.portArg = portArgDefault
 		self.port = 0
+		self.inputFile = None
+		self.outputFile = None
 
 	def setPortRange(self,low,high):
 		self.lowPort = low
@@ -39,14 +41,30 @@ class DataMover(object):
 		self.stdoutHandler = stdout 
 		self.stderrHandler = stderr 
 
+	def setInputfile(self,fname):
+		self.inputFile = fname
+
+	def setOutputFile(self,fname):
+		self.outputFile = fname
+
 	def run(self):
+
+		if self.inputFile is not None:
+			iFile = file(self.inputFile,'r')
+		else:
+			iFile = None
+
 		if self.lowPort is None or self.highPort is None:
 			targs=[self.exe]
 			targs.extend(self.args)
 			resultcode,output,err=TimedExec.runTimedCmd(self.timeout,
-				targs,self.stdoutHandler, self.stderrHandler)
+				targs, indata=iFile,
+				outhandler=self.stdoutHandler, 
+				errhandler=self.stderrHandler)
 			if resultcode < 0:
 				sys.stdout.write("Result code: %d\n" % resultcode)
+				if iFile is not None:
+					iFile.close()
 				raise TimeOutException(self.exe)	
 		else:
 			for self.port in range(self.lowPort,self.highPort):
@@ -55,19 +73,23 @@ class DataMover(object):
 					targs.extend(self.args)
 					targs.extend([self.portArg, "%d" % int(self.port)]),
 					resultcode,output,err=TimedExec.runTimedCmd(self.timeout,
-						targs, self.stdoutHandler, self.stderrHandler)
+						targs, indata=iFile,
+						outhandler=self.stdoutHandler, 
+						errhandler=self.stderrHandler)
 					if resultcode < 0:
 						sys.stdout.write("Result code: %d\n" % resultcode)
 						raise TimeOutException(self.exe)	
 					break
 				except PortInUseException,e:
 					sys.stderr.write(e.message)
+			if iFile is not None:
+				iFile.close()
 
 
-class IperfMover(DataMover):
+class Iperf(DataMover):
 
 	def __init__(self):
-		super(IperfMover,self).__init__()
+		super(Iperf,self).__init__()
 		iperfExe = '/usr/bin/iperf'
 		if not os.path.exists(iperfExe):
 			iperfExe = '/opt/iperf/bin/iperf'
@@ -80,6 +102,7 @@ class IperfMover(DataMover):
 		message = "%s(%d): %s" % (socket.getfqdn(),pid,str)
 		sys.stdout.write(message)
 		host = socket.getfqdn()
+
 		try:
 			if str.find("its/sec") != -1:
 				transferredKB = str.split()[-4]
@@ -103,6 +126,42 @@ class IperfMover(DataMover):
 
 	def server(self):
 		self.setArgs(["-s"])
+		self.setPortRange(5001,5010)
+		self.run()
+
+class Netcat(DataMover):
+	""" Netcat-based Data Mover """
+	def __init__(self):
+		super(Netcat,self).__init__()
+		self.setExe('/usr/bin/nc')
+		self.setOutputHandler(self.netcatout,self.netcaterr)
+		self.oFile = None	
+
+	def setOutputFile(self,fname):
+		super(Netcat,self).setOutputFile(fname)
+		self.oFile = file(self.outputFile,"w")	
+
+	def netcatout(self,pid,str):
+		""" stdout handler when running netcat under TimedExec """
+		message = "%s(%d): %s" % (socket.getfqdn(),pid,str)
+		if self.oFile is not None:
+			self.oFile.write(str)
+		else:
+			sys.stdout.write(str)
+
+	def netcaterr(self,pid,str):
+		""" stderr handler when running iperf under TimedExec """
+		sys.stdout.write("%d#: %s" %(pid,str))
+		raise PortInUseException("netcat", self.port)
+
+	def client(self,server,port=5001):
+		self.setArgs(["%s" % server,"%d" % int(port)])
+		self.run()
+		if self.oFile is not None:
+			self.oFile.close()
+
+	def server(self):
+		self.setPortArg("-l")
 		self.setPortRange(5001,5010)
 		self.run()
 

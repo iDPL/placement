@@ -66,7 +66,7 @@ def processTimeout(seconds, pid):
 		timeout.cancel()
 
 
-def runTimedCmd(timeout, cmd, outhandler=None, errhandler=None):
+def runTimedCmd(timeout, cmd, indata=None, outhandler=None, errhandler=None):
 	""" Run a command with a timeout.  
 	    Returns output,error,and returncode. 
 
@@ -75,10 +75,11 @@ def runTimedCmd(timeout, cmd, outhandler=None, errhandler=None):
             sized output or reaction to specific output
 
 	    signatures of handlers are handler(int pid, string str)
-            stdin is None """
+            stdin is indata and be File Decriptor, File Object, None """
 
 	## create the process
-	proc = subprocess.Popen(cmd, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
+	proc = subprocess.Popen(cmd, stdin=indata,
+		stderr=subprocess.PIPE, stdout=subprocess.PIPE)
 
 	outdata=[]
 	errdata=[]

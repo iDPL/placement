@@ -72,6 +72,8 @@ class DataMover(object):
 					targs=[self.exe]
 					targs.extend(self.args)
 					targs.extend([self.portArg, "%d" % int(self.port)]),
+					rd = TimedExec.RunDelayed(2,chirpPort().dRun,self.port)
+					rd.run()
 					resultcode,output,err=TimedExec.runTimedCmd(self.timeout,
 						targs, indata=iFile,
 						outhandler=self.stdoutHandler, 
@@ -82,6 +84,9 @@ class DataMover(object):
 					break
 				except PortInUseException,e:
 					sys.stderr.write(e.message)
+					rd.cancel()
+					rd.join()
+
 			if iFile is not None:
 				iFile.close()
 
@@ -165,5 +170,9 @@ class Netcat(DataMover):
 		self.setPortRange(5001,5010)
 		self.run()
 
+class chirpPort(object):
+	def dRun(self, port):
+			print "dRUN is being called with %d" % port 
+			return TimedExec.runTimedCmd(1,["/bin/echo","%d" % port ])
 
 # vim: ts=4:sw=4:

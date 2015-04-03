@@ -1,0 +1,63 @@
+############
+#
+# Parallel Job 
+#
+############
+
+universe = parallel
+executable = placement2.py
+
+SRC_HOST=flashio-osg.calit2.optiputer.net
+SRC_PATH=/home/phil/htcondor-8.2.2-4.x86_64.disk1.iso
+DST_HOST=komatsu.chtc.wisc.edu
+DST_PATH=htcondor-8.2.2-4.x86_64.disk1.iso
+
+### Crondor Settings
+# A promise that jobs will not run more often than this (in seconds)
+# Required for the the job to run multiple times successfully.
+#LEASE=1500
+
+# A run is allowed to take this long (in seconds) to set up; otherwise
+# that run is skipped
+#cron_window=60
+
+# Try to run jobs on this schedule
+#cron_minute=0-59/30
+#
+# Keep running the job
+# on_exit_remove=false
+
+# Arguments are:
+# 1. Sending host
+# 2. File to send (on the sending host)
+# 3. Receiving host
+# 4. Location to write file (on the receiving host)
+arguments = $(SRC_HOST) $(SRC_PATH) $(DST_HOST) $(DST_PATH) $(LEASE)
+
+## Enable Chirp
++WantIOProxy = true
+
+input   = /dev/null
+output = placement2.out.$(Node)
+error  = placement2.err.$(Node)
+log    = placement2.log
+getenv = true
+
++SrcPath = "$(SRC_PATH)"
++DstHost = "$(DST_HOST)"
++DstPath = "$(DST_PATH)"
+
++ParallelShutdownPolicy = "WAIT_FOR_ALL"
+
+transfer_input_files = DataMover.py,TimedExec.py,IDPLException.py,CondorTools.py
+
+should_transfer_files = YES
+when_to_transfer_output = ON_EXIT
+                                                  
+machine_count = 1
+requirements = (Machine == "$(SRC_HOST)")
+queue
+
+machine_count = 1
+requirements = (Machine == "$(DST_HOST)")
+queue

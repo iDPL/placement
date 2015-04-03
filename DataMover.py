@@ -18,6 +18,7 @@ class DataMover(object):
 		self.args = []
 		self.portArg = portArgDefault
 		self.port = 0
+		self.portReporter = Reporter().noReport
 		self.inputFile = None
 		self.outputFile = None
 
@@ -41,11 +42,18 @@ class DataMover(object):
 		self.stdoutHandler = stdout 
 		self.stderrHandler = stderr 
 
-	def setInputfile(self,fname):
+	def setInputFile(self,fname):
 		self.inputFile = fname
 
 	def setOutputFile(self,fname):
 		self.outputFile = fname
+
+	def setPortReporter(self,reporter):
+		""" enable the port actually used by the server to be reported """
+		self.portReporter = reporter
+
+	def setTimeout(self,timeout):
+		self.timeout = timeout
 
 	def run(self):
 
@@ -72,19 +80,25 @@ class DataMover(object):
 					targs=[self.exe]
 					targs.extend(self.args)
 					targs.extend([self.portArg, "%d" % int(self.port)]),
-					rd = TimedExec.RunDelayed(2,chirpPort().dRun,self.port)
+					## in 2 seconds call the portReporter to indicate
+					## which port is being used. If specific mover has
+					## an error within 2 seconds, assumed that port is in use.
+					## Then next port is tried.
+					rd = TimedExec.RunDelayed(2,self.portReporter,self.port)
 					rd.run()
 					resultcode,output,err=TimedExec.runTimedCmd(self.timeout,
 						targs, indata=iFile,
 						outhandler=self.stdoutHandler, 
 						errhandler=self.stderrHandler)
+					rd.join()
 					if resultcode < 0:
 						sys.stdout.write("Result code: %d\n" % resultcode)
 						raise TimeOutException(self.exe)	
 					break
 				except PortInUseException,e:
-					sys.stderr.write(e.message)
+					## Cancel the portReporter
 					rd.cancel()
+					sys.stderr.write(e.message + "\n")
 					rd.join()
 
 			if iFile is not None:
@@ -100,23 +114,22 @@ class Iperf(DataMover):
 			iperfExe = '/opt/iperf/bin/iperf'
 		self.setExe(iperfExe)
 		self.setOutputHandler(self.iperfout,self.iperferr)
+		self.rawData = None
+		self.transferredKB=0
 	
 	def iperfout(self,pid,str):
 		""" stdout handler when running iperf under TimedExec """
-		global transferredKB
 		message = "%s(%d): %s" % (socket.getfqdn(),pid,str)
 		sys.stdout.write(message)
 		host = socket.getfqdn()
 
 		try:
+			## if transfer finished, record bytes sent
+			## Then kill iperf (server)
 			if str.find("its/sec") != -1:
-				transferredKB = str.split()[-4]
-				msg = " ".join(str.split()[-2:])
-				# chirp.ulog("%s: iperf %s" % (host, msg))
+				self.transferredKB = str.split()[-4]
+				self.rawData = " ".join(str.split()[-2:])
 				os.kill(pid,signal.SIGTERM)
-			if str.find("listening") != -1:
-				listenport = int(str.split()[-1])
-				# chirp.setJobAttr("IperfServer","'%s %d'" % (host, listenport))
 		except IDPLException,e:
 			sys.stderr.write(e.message)
 
@@ -126,7 +139,7 @@ class Iperf(DataMover):
 		raise PortInUseException("iperf", self.port)
 
 	def client(self,server,port=5001):
-		self.setArgs(["-c","%s" % server,"-p","%d" % int(port)])
+		self.setArgs(["-c","%s" % server,"-p","%d" % int(port),"-f","k"])
 		self.run()
 
 	def server(self):
@@ -170,9 +183,14 @@ class Netcat(DataMover):
 		self.setPortRange(5001,5010)
 		self.run()
 
-class chirpPort(object):
-	def dRun(self, port):
-			print "dRUN is being called with %d" % port 
-			return TimedExec.runTimedCmd(1,["/bin/echo","%d" % port ])
+class Reporter(object):
+	""" Empty portReport. Nothing is printed """
+	def noReport(self, port):
+		pass
+
+class PrintReporter(object):
+	""" print the port to stdout """
+	def doReport(self, port):
+		print port	
 
 # vim: ts=4:sw=4:

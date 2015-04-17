@@ -7,10 +7,10 @@
 universe = parallel
 executable = placement2.py
 
-SRC_HOST=flashio-osg.calit2.optiputer.net
-SRC_PATH=/home/phil/htcondor-8.2.2-4.x86_64.disk1.iso
-DST_HOST=komatsu.chtc.wisc.edu
-DST_PATH=htcondor-8.2.2-4.x86_64.disk1.iso
+SRC_HOST=komatsu.chtc.wisc.edu
+SRC_PATH=/home/idpl/100M
+DST_HOST=murpa.rocksclusters.org
+DST_PATH=100M
 
 ### Crondor Settings
 # A promise that jobs will not run more often than this (in seconds)
@@ -28,11 +28,10 @@ DST_PATH=htcondor-8.2.2-4.x86_64.disk1.iso
 # on_exit_remove=false
 
 # Arguments are:
-# 1. Sending host
-# 2. File to send (on the sending host)
-# 3. Receiving host
-# 4. Location to write file (on the receiving host)
-arguments = $(SRC_HOST) $(SRC_PATH) $(DST_HOST) $(DST_PATH) $(LEASE)
+# 1. File to send (on the sending host)
+# 2. Location to write file (on the receiving host)
+
+arguments = -i $(SRC_PATH) -o $(DST_PATH) 
 
 ## Enable Chirp
 +WantIOProxy = true
@@ -49,15 +48,17 @@ getenv = true
 
 +ParallelShutdownPolicy = "WAIT_FOR_ALL"
 
-transfer_input_files = DataMover.py,TimedExec.py,IDPLException.py,CondorTools.py
+transfer_input_files = DataMover.py,TimedExec.py,IDPLException.py,CondorTools.py,empty,ncwrap.sh
 
 should_transfer_files = YES
 when_to_transfer_output = ON_EXIT
                                                   
 machine_count = 1
 requirements = (Machine == "$(SRC_HOST)")
+transfer_output_files = empty
 queue
 
 machine_count = 1
 requirements = (Machine == "$(DST_HOST)")
+transfer_output_files = empty 
 queue

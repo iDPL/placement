@@ -7,9 +7,11 @@ import sys
 import signal
 import socket
 import time
+import getopt
+import subprocess
 
 ##### Configurables
-clientTimeout = 30
+clientTimeout = 120
 serverTimeout = 120
 ##############
 
@@ -54,84 +56,116 @@ def writeRecord(tag, src,dest,start,end,md5_equal,duration,kbytes):
 	chirp.ulog(logmessage)
 
 ## *****************************
+## Actually performn the placement 
+## *****************************
+def performPlacement(inputFile,outputFile):
+	iperf = DataMover.Iperf()
+	iperfChirp = ChirpMover("iperf")
+	netcat = DataMover.Netcat()
+	netcatChirp = ChirpMover("netcat")
+	
+	if int(os.environ['_CONDOR_PROCNO']) == 0:
+		iam = "client"
+		#####   IPERF TEST
+		try:
+			# Set up the client
+			iperf.setTimeout(clientTimeout)
+			# Time the client (iperf)
+			iperfChirp.ulog(iam,"start")
+			(host,port) = iperfChirp.getHostPort()
+			tstart = time.time()
+			iperf.client(host,port)
+			tend = time.time()
+			writeRecord("iperf",socket.getfqdn(),host,tstart,tend,1,tend-tstart,
+				int(iperf.transferredKB))
+			# Finish (iperf)
+			iperfChirp.ulog(iam,"end")
+		except IDPLException,e:
+			iperfChirp.ulog(iam,"error %s" % e.message)
+			print "Client had Exception: " + e.message
+	
+		#####   NETCAT TEST
+		try:
+			# Set up the client
+			netcat.setTimeout(clientTimeout)
+			netcat.setInputFile(inputFile)
+			# Time the client (netcat)
+			netcatChirp.ulog(iam,"start")
+			(host,port) = netcatChirp.getHostPort()
+			netcat.client(host,port)
+			tend = time.time()
+			transferred = os.path.getsize(inputFile)
+			writeRecord("netcat",socket.getfqdn(),host,tstart,tend,1,tend-tstart,
+				int(transferred))
+			# Finish (netcat)
+			netcatChirp.ulog(iam,"end")
+		except IDPLException,e:
+			netcatChirp.ulog(iam,"error %s" % e.message)
+			print "Client had Exception: " + e.message
+	else:
+		iam = "server"
+		#####   IPERF TEST
+		try:
+			# Set up the Server
+			iperfChirp.ulog(iam,"start")
+			iperf.setTimeout(serverTimeout)
+			iperf.setPortReporter(iperfChirp.postPort)
+			# Run it
+			print "Iperf Server Starting"
+			iperf.server()
+			print "Iperf Server Ending"
+			# Finish
+			iperfChirp.ulog(iam,"end")
+		except IDPLException, e:
+			iperfChirp.ulog(iam,"error %s" % e.message)
+			print "Server had Exception: " + e.message
+		finally:
+			iperfChirp.clearPort()	
+	
+		#####   NETCAT TEST
+		try:
+			# Set up the Server
+			netcat.setOutputFile(outputFile)
+			netcat.setTimeout(serverTimeout)
+			netcat.setPortReporter(netcatChirp.postPort)
+			# Run it
+			netcat.server()
+			# Finish
+			netcatChirp.ulog(iam,"end")
+			os.system("ls -l")
+			os.system("md5sum %s" % outputFile)
+		except IDPLException, e:
+			netcatChirp.ulog(iam,"error %s" % e.message)
+			print "Server had Exception: " + e.message
+		finally:
+			netcatChirp.clearPort()	
+	
+## *****************************
 ## main routine
 ## *****************************
-iperf = DataMover.Iperf()
-iperfChirp = ChirpMover("iperf")
-netcat = DataMover.Netcat()
-netcatChirp = ChirpMover("netcat")
 
-if int(os.environ['_CONDOR_PROCNO']) == 0:
-	iam = "client"
-	#####   IPERF TEST
+def main(argv):
+	inputfile = ''
+	outputfile = ''
 	try:
-		# Set up the client
-		iperf.setTimeout(clientTimeout)
-		# Time the client (iperf)
-		iperfChirp.ulog(iam,"start")
-		(host,port) = iperfChirp.getHostPort()
-		tstart = time.time()
-		iperf.client(host,port)
-		tend = time.time()
-		writeRecord("iperf",socket.getfqdn(),host,tstart,tend,1,tend-tstart,
-			int(iperf.transferredKB))
-		# Finish (iperf)
-		iperfChirp.ulog(iam,"end")
-	except IDPLException,e:
-		iperfChirp.ulog(iam,"error %s" % e.message)
-		print "Client had Exception: " + e.message
+		opts, args = getopt.getopt(argv,"hi:o:",["ifile=","ofile="])
+	except getopt.GetoptError:
+		print 'placement2.py -i <inputfile> -o <outputfile>'
+		sys.exit(2)
+	for opt, arg in opts:
+		if opt == '-h':
+			print 'placement2.py -i <inputfile> -o <outputfile>'
+			sys.exit()
+		elif opt in ("-i", "--ifile"):
+			inputfile = arg
+		elif opt in ("-o", "--ofile"):
+			outputfile = arg
+	print 'Input file is:', inputfile
+	print 'Output file is:', outputfile
+	performPlacement(inputfile,outputfile)
 
-	#####   NETCAT TEST
-	try:
-		# Set up the client
-		netcat.setTimeout(clientTimeout)
-		netcat.setInputFile("DataMover.py")
-		# Time the client (netcat)
-		netcatChirp.ulog(iam,"start")
-		(host,port) = netcatChirp.getHostPort()
-		tstart = time.time()
-		netcat.client(host,port)
-		tend = time.time()
-		transferred = os.path.getsize("DataMover.py")
-		writeRecord("netcat",socket.getfqdn(),host,tstart,tend,1,tend-tstart,
-			int(transferred))
-		# Finish (iperf)
-		netcatChirp.ulog(iam,"end")
-	except IDPLException,e:
-		netcatChirp.ulog(iam,"error %s" % e.message)
-		print "Client had Exception: " + e.message
-else:
-	iam = "server"
-	#####   IPERF TEST
-	try:
-		# Set up the Server
-		iperfChirp.ulog(iam,"start")
-		iperf.setTimeout(serverTimeout)
-		iperf.setPortReporter(iperfChirp.postPort)
-		# Run it
-		iperf.server()
-		# Finish
-		iperfChirp.ulog(iam,"end")
-	except IDPLException, e:
-		iperfChirp.ulog(iam,"error %s" % e.message)
-		print "Server had Exception: " + e.message
-	finally:
-		iperfChirp.clearPort()	
 
-	#####   NETCAT TEST
-	try:
-		# Set up the Server
-		netcat.setOutputFile("OutputReceived")
-		netcat.setTimeout(serverTimeout)
-		netcat.setPortReporter(netcatChirp.postPort)
-		# Run it
-		netcat.server()
-		# Finish
-		netcatChirp.ulog(iam,"end")
-	except IDPLException, e:
-		netcatChirp.ulog(iam,"error %s" % e.message)
-		print "Server had Exception: " + e.message
-	finally:
-		netcatChirp.clearPort()	
+if __name__ == "__main__":
+	main(sys.argv[1:])
 		
 # vim: ts=4:sw=4:tw=78

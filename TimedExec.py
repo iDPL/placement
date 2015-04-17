@@ -74,62 +74,92 @@ def runTimedCmd(timeout, cmd, indata=None, outhandler=None, errhandler=None):
             are called as data becomes available. Enabling handling of unlimited
             sized output or reaction to specific output
 
+			if an outhandler/errhandler is a file, then data is written
+			directly to the file
+
 	    signatures of handlers are handler(int pid, string str)
             stdin is indata and be File Decriptor, File Object, None """
 
 	## create the process
-	proc = subprocess.Popen(cmd, stdin=indata,
-		stderr=subprocess.PIPE, stdout=subprocess.PIPE)
+	if type(indata) == type(file("/dev/null")):
+		intype = indata
+		print "setting timed cmd input to be a file type"
+	else:
+		intype = None
+
+	if type(outhandler) == type(file("/dev/null")):
+		outtype = outhandler
+	else:
+		outtype = subprocess.PIPE
+
+	if type(errhandler) == type(file("/dev/null")):
+		errtype = errhandler 
+	else:
+		errtype = subprocess.PIPE
+	proc = subprocess.Popen(cmd, stdin=intype,
+		stderr=errtype, stdout=outtype)
 
 	outdata=[]
 	errdata=[]
 	## Output to monitor
-	p_out = proc.stdout
-	p_err = proc.stderr
-	monitor = [p_out,p_err]
+	p_out = None
+	p_err = None
+	monitor = []
+	if (outtype == subprocess.PIPE):
+		p_out = proc.stdout
+		monitor.append(p_out)
+	
+	if (errtype == subprocess.PIPE):
+		p_err = proc.stderr
+		monitor.append(p_err)
 
 	## Grab data and append until process ends or times out
 	with processTimeout(timeout, proc.pid):
-		wantmore = True
-		while wantmore:
-			# Check if subprocess has already exited
-			if proc.poll() is not None:
-				break
+		if (len(monitor)) == 0:
+			resultcode = proc.wait()
+		else:
+			wantmore = True
+			while wantmore:
+				# Check if subprocess has already exited
+				if proc.poll() is not None:
+					break
 
-			# See what's ready to be read 
-			readable,writable,exceptional=select.select(monitor,[],monitor)
+				# See what's ready to be read 
+				readable,writable,exceptional=select.select(monitor,[],monitor)
 
-			for s in exceptional:
-				wantmore = False
+				for s in exceptional:
+					wantmore = False
 
-			for s in readable:
-				line = s.readline()
-				if s is p_out and len(line) > 0:
-					if outhandler is None:
-						outdata.append(line)
-					else:
-						outhandler(proc.pid, line)
-				if s is p_err and len(line) > 0:
-					if errhandler is None:
-						errdata.append(line)
-					else:
-						errhandler(proc.pid, line)	
+				for s in readable:
+					line = s.readline()
+					if s is p_out and len(line) > 0:
+						if outhandler is None:
+							outdata.append(line)
+						else:
+							outhandler(proc.pid, line)
+					if s is p_err and len(line) > 0:
+						if errhandler is None:
+							errdata.append(line)
+						else:
+							errhandler(proc.pid, line)	
 
 	resultcode = proc.wait()
 
 	## There is a race above where proc.poll() may indicate process
 	## is finished, but errdata or outdata still has buffered data.
 	## Grab it here
-	for line in p_out.readlines():
-		if outhandler is None:
-			outdata.append(line)
-		else:
-			outhandler(proc.pid, line)
-	for line in p_err.readlines():
-		if errhandler is None:
-			errdata.append(line)
-		else:
-			errhandler(proc.pid, line)
+	if  p_out is not None:
+		for line in p_out.readlines():
+			if outhandler is None:
+				outdata.append(line)
+			else:
+				outhandler(proc.pid, line)
+	if  p_err is not None:
+		for line in p_err.readlines():
+			if errhandler is None:
+				errdata.append(line)
+			else:
+				errhandler(proc.pid, line)
 			
 
 	return resultcode,outdata,errdata

@@ -38,8 +38,10 @@ class DataMover(object):
 	def setArgs(self,args):
 		self.args = args 
 
-	def setOutputHandler(self,stdout=None, stderr=None):
+	def setOutputHandler(self,stdout=None):
 		self.stdoutHandler = stdout 
+
+	def setErrHandler(self,stderr=None):
 		self.stderrHandler = stderr 
 
 	def setInputFile(self,fname):
@@ -113,7 +115,8 @@ class Iperf(DataMover):
 		if not os.path.exists(iperfExe):
 			iperfExe = '/opt/iperf/bin/iperf'
 		self.setExe(iperfExe)
-		self.setOutputHandler(self.iperfout,self.iperferr)
+		self.setOutputHandler(self.iperfout)
+		self.setErrHandler(self.iperferr)
 		self.rawData = None
 		self.transferredKB=0
 	
@@ -130,13 +133,15 @@ class Iperf(DataMover):
 				self.transferredKB = str.split()[-4]
 				self.rawData = " ".join(str.split()[-2:])
 				os.kill(pid,signal.SIGTERM)
+				sys.stdout.write("Killing pid %d\n" % pid)
 		except IDPLException,e:
 			sys.stderr.write(e.message)
 
 	def iperferr(self,pid,str):
 		""" stderr handler when running iperf under TimedExec """
-		sys.stdout.write("%d#: %s" %(pid,str))
-		raise PortInUseException("iperf", self.port)
+		sys.stderr.write("%d#: %s" %(pid,str))
+		if str.find("bind failed") != -1:
+			raise PortInUseException("iperf", self.port)
 
 	def client(self,server,port=5001):
 		self.setArgs(["-c","%s" % server,"-p","%d" % int(port),"-f","k"])
@@ -152,36 +157,38 @@ class Netcat(DataMover):
 	def __init__(self):
 		super(Netcat,self).__init__()
 		self.setExe('/usr/bin/nc')
-		self.setOutputHandler(self.netcatout,self.netcaterr)
+		self.setOutputHandler(self.netcatout)
+		self.setErrHandler(self.netcaterr)
 		self.oFile = None	
 
 	def setOutputFile(self,fname):
 		super(Netcat,self).setOutputFile(fname)
 		self.oFile = file(self.outputFile,"w")	
+		self.setOutputHandler(self.oFile)
 
 	def netcatout(self,pid,str):
 		""" stdout handler when running netcat under TimedExec """
 		message = "%s(%d): %s" % (socket.getfqdn(),pid,str)
-		if self.oFile is not None:
-			self.oFile.write(str)
-		else:
-			sys.stdout.write(str)
+		sys.stdout.write(str)
 
 	def netcaterr(self,pid,str):
-		""" stderr handler when running iperf under TimedExec """
+		""" stderr handler when running netcat under TimedExec """
 		sys.stdout.write("%d#: %s" %(pid,str))
 		raise PortInUseException("netcat", self.port)
 
-	def client(self,server,port=5001):
+	def client(self,server,port=5011):
 		self.setArgs(["%s" % server,"%d" % int(port)])
 		self.run()
 		if self.oFile is not None:
 			self.oFile.close()
 
 	def server(self):
+		self.setArgs(["-d"])
 		self.setPortArg("-l")
-		self.setPortRange(5001,5010)
+		self.setPortRange(5011,5020)
 		self.run()
+		if self.oFile is not None:
+			self.oFile.close()
 
 class Reporter(object):
 	""" Empty portReport. Nothing is printed """

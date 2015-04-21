@@ -27,11 +27,23 @@ class ChirpMover(object):
 		self.prefix = prefix
 		self.chirp = CondorTools.CondorChirp()
 		self.jobAttr = "%sServer" % prefix
+		self.md5Attr = "%sMD5" % prefix
 		self.host = socket.getfqdn()
 	def postPort(self,port):
 		self.chirp.setJobAttr(self.jobAttr, "'%s %d'" % (self.host, port))
 	def clearPort(self):
 		self.chirp.setJobAttr(self.jobAttr, None)
+
+	def postMD5(self,md5):
+		self.chirp.setJobAttr(self.md5Attr, "'%s'" % md5)
+	def clearMD5(self):
+		self.chirp.setJobAttr(self.md5Attr, None)
+	def getMD5(self):
+		interval = 5
+		maxtries = 12 
+		md5 = chirp.getJobAttrWait(self.md5Attr,None,interval, maxtries)
+		return md5
+
 	def getHostPort(self):
 		interval = 5
 		maxtries = 12*3
@@ -89,14 +101,17 @@ def performPlacement(inputFile,outputFile):
 			# Set up the client
 			netcat.setTimeout(clientTimeout)
 			netcat.setInputFile(inputFile)
+			md5 = "'%s'" % netcat.md5(inputFile)
 			# Time the client (netcat)
 			netcatChirp.ulog(iam,"start")
 			(host,port) = netcatChirp.getHostPort()
 			netcat.client(host,port)
 			tend = time.time()
 			transferred = os.path.getsize(inputFile)
-			writeRecord("netcat",socket.getfqdn(),host,tstart,tend,1,tend-tstart,
-				int(transferred))
+			xmd5 = netcatChirp.getMD5()
+			ok = 1 if md5 == xmd5 else 0
+			writeRecord("netcat",socket.getfqdn(),host,tstart,tend,ok,
+				tend-tstart,int(transferred))
 			# Finish (netcat)
 			netcatChirp.ulog(iam,"end")
 		except IDPLException,e:
@@ -111,9 +126,7 @@ def performPlacement(inputFile,outputFile):
 			iperf.setTimeout(serverTimeout)
 			iperf.setPortReporter(iperfChirp.postPort)
 			# Run it
-			print "Iperf Server Starting"
 			iperf.server()
-			print "Iperf Server Ending"
 			# Finish
 			iperfChirp.ulog(iam,"end")
 		except IDPLException, e:
@@ -128,12 +141,13 @@ def performPlacement(inputFile,outputFile):
 			netcat.setOutputFile(outputFile)
 			netcat.setTimeout(serverTimeout)
 			netcat.setPortReporter(netcatChirp.postPort)
+			netcatChirp.clearMD5()
 			# Run it
 			netcat.server()
+			# post md5
+			netcatChirp.postMD5(netcat.md5(outputFile))
 			# Finish
 			netcatChirp.ulog(iam,"end")
-			os.system("ls -l")
-			os.system("md5sum %s" % outputFile)
 		except IDPLException, e:
 			netcatChirp.ulog(iam,"error %s" % e.message)
 			print "Server had Exception: " + e.message

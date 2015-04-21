@@ -5,7 +5,7 @@ import time
 import socket
 import sys
 import signal
-
+import hashlib
 
 timeoutDefault = 30
 portArgDefault = "-p"
@@ -57,6 +57,18 @@ class DataMover(object):
 	def setTimeout(self,timeout):
 		self.timeout = timeout
 
+	def md5(self,fname):
+		"""Open the file fname, read it and calc md5sum"""
+		buflen = 65536
+		hash = hashlib.md5()
+		with open(fname,'r',buflen) as f:
+			buf = f.read(buflen)
+			while len(buf) > 0:
+				hash.update(buf)
+				buf = f.read(buflen)
+		return hash.hexdigest()
+
+	
 	def run(self):
 
 		if self.inputFile is not None:

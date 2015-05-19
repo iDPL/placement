@@ -105,6 +105,7 @@ def performPlacement(inputFile,outputFile):
 			# Time the client (netcat)
 			netcatChirp.ulog(iam,"start")
 			(host,port) = netcatChirp.getHostPort()
+			tstart = time.time()
 			netcat.client(host,port)
 			tend = time.time()
 			transferred = os.path.getsize(inputFile)

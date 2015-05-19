@@ -1,0 +1,65 @@
+A quick overview of placement logic
+
+Placement tests can set up an arbitrary server to make connections and then tear down the server.
+Tested servers so far are
+	1. iperf
+	2. netcat
+	3. ssh
+
+In all cases, the client must be informed about the port  on which a server is
+running.  
+In the case of scp/ssh, additional information must be shared to make a relatively secure
+passwordless connection.
+
+
+This structure makes use of the Condor's remote I/O capability called Chirp. Specifically,
+we use Chirp to set job attributes.    
+
+Specific job attributes for "synchronization barriers". For example, a client cannot connect to a 
+server unless a hostname:port pair has been set in the job attributes.   These sync attributes, 
+are cleared at the end of each cron iteration.
+
+
+1. iperf
+	- server starts
+	- server posts the  "iperfServer" attribute
+	- client waits for the "iperfServer" to be set
+	- client begins transfer
+	- on shutdown (exception or normal), attributed is cleared (set to undefined)
+
+2. netcat
+	- server clears netcatMD5 attribute  
+	- server starts
+	- server posts netcatServer attribute
+	- client waits for netcatServer attribute 
+	- client begins transfer
+	- on non-exceptional finish, server computes md5sum of file, and posts value to netcatMD5
+	- at the end of transfer, client waits for netcatMD5
+	- on non-exceptional finish client writes performance record, including MD5
+	- on shutdown (exception and normal), server clears the netcatMD5 and netcatServer attributes
+
+3. ssh  
+ssh is more complicated because of key exchange. 
+on a public key is sent, via chirp, to the server.  Private keys are not transferred
+	- client clears scpAuthorizedKey attribute
+	- client creates temporary public/private keypair
+	- client posts the public key to scpAuthorizedKey 
+	- server clears scpMD5 attribute  
+	- server sets up hostkey pair
+	- server waits for scpAuthorizedKey
+	- server posts outputFile attribute (full path where to place file on server)
+	- server posts scpUser attribute (name of the user on the server )
+	- server starts
+	- server posts scpServer attribute
+	- client waits for scpServer attribute 
+	- client reads subordinate attributes: outputFile,scpUser
+	- client begins transfer
+	- on non-exceptional finish, server computes md5sum of file, and posts value to scpMD5
+	- at the end of transfer, client waits for scpMD5
+	- on non-exceptional finish client writes performance record, including MD5
+	- on shutdown (exception and normal), server clears the scpMD5 and scpServer attributes
+	- on shutdown (exception and normal), client clears the scpAuthorizedKey attribute
+
+
+Timeouts 
+	Failure can occur at any stage, exceptions are generated and logged on any timeout.

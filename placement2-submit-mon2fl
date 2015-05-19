@@ -1,0 +1,67 @@
+############
+#
+# Parallel Job 
+#
+############
+
+universe = parallel
+executable = placement2.py
+
+EXPERIMENT=mon2fl
+SRC_HOST=mongo.mayer.optiputer.net
+SRC_PATH=/home/idpl/100M
+DST_HOST=flashio-osg.calit2.optiputer.net
+DST_PATH=100M
+
+
+### Crondor Settings
+# A promise that jobs will not run more often than this (in seconds)
+# Required for the the job to run multiple times successfully.
+#LEASE=1500
+
+# A run is allowed to take this long (in seconds) to set up; otherwise
+# that run is skipped
+#cron_window=60
+
+# Try to run jobs on this schedule
+#cron_hour=0-23/1
+#cron_minute=15
+#
+# Keep running the job
+#on_exit_remove=false
+
+# Arguments are:
+# 1. File to send (on the sending host)
+# 2. Location to write file (on the receiving host)
+
+arguments = -i $(SRC_PATH) -o $(DST_PATH) 
+
+## Enable Chirp
++WantIOProxy = true
+
+input   = /dev/null
+output = $(EXPERIMENT)/placement2.out.$(Node)
+error  = $(EXPERIMENT)/placement2.err.$(Node)
+log    = $(EXPERIMENT)/placement2.log
+getenv = true
+
++SrcPath = "$(SRC_PATH)"
++DstHost = "$(DST_HOST)"
++DstPath = "$(DST_PATH)"
+
++ParallelShutdownPolicy = "WAIT_FOR_ALL"
+
+transfer_input_files = DataMover.py,TimedExec.py,IDPLException.py,CondorTools.py,empty
+
+should_transfer_files = YES
+when_to_transfer_output = ON_EXIT
+                                                  
+machine_count = 1
+requirements = (Machine == "$(SRC_HOST)")
+transfer_output_files = empty
+queue
+
+machine_count = 1
+requirements = (Machine == "$(DST_HOST)")
+transfer_output_files = empty 
+queue

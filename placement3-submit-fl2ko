@@ -1,0 +1,69 @@
+############
+#
+# Parallel Job 
+#
+############
+
+universe = parallel
+executable = placement3.py
+
+EXPERIMENT=fl2ko
+SRC_HOST=flashio-osg.calit2.optiputer.net
+SRC_PATH=/home/idpl/100M
+DST_HOST=komatsu.chtc.wisc.edu
+DST_PATH=100M
+
+
+### Crondor Settings
+# A promise that jobs will not run more often than this (in seconds)
+# Required for the the job to run multiple times successfully.
+#LEASE=1500
+
+# A run is allowed to take this long (in seconds) to set up; otherwise
+# that run is skipped
+cron_window=420
+
+# Try to run jobs on this schedule
+cron_minute=40
+#
+# Keep running the job
+on_exit_remove=false
+
+# Arguments are:
+# 1. File to send (on the sending host)
+# 2. Location to write file (on the receiving host)
+
+arguments = -i $(SRC_PATH) -o $(DST_PATH) 
+
+## Enable Chirp
++WantIOProxy = true
+
+input   = /dev/null
+output = $(EXPERIMENT)/placement3.out.$(Node)
+error  = $(EXPERIMENT)/placement3.err.$(Node)
+log    = $(EXPERIMENT)/placement3.log
+getenv = true
+
++SrcHost = "$(SRC_HOST)"
++SrcPath = "$(SRC_PATH)"
++DstHost = "$(DST_HOST)"
++DstPath = "$(DST_PATH)"
++ExperimentName = "$(EXPERIMENT):$(executable)"
++ExperimentDescription = "$(SRC_HOST) to $(DST_HOST) file $(SRC_PATH)"
+
++ParallelShutdownPolicy = "WAIT_FOR_ALL"
+
+transfer_input_files = DataMover.py,TimedExec.py,IDPLException.py,CondorTools.py,SCPMover.py,empty
+
+should_transfer_files = YES
+when_to_transfer_output = ON_EXIT
+                                                  
+machine_count = 1
+requirements = (Machine == "$(SRC_HOST)")
+transfer_output_files = empty
+queue
+
+machine_count = 1
+requirements = (Machine == "$(DST_HOST)")
+transfer_output_files = empty 
+queue

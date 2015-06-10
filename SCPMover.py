@@ -29,7 +29,8 @@ class SCPMover(DataMover):
 		self.userkeypub = None
 		self.inputFile = None  # source file on client
 		self.outputFile = None # dest file on server
-
+		self.addRequirement("SubAttrs");
+		self.addRequirement("PubKey");
 
 	def sshout(self,pid,str):
 		""" stdout handler when running sshd under TimedExec """
@@ -42,12 +43,6 @@ class SCPMover(DataMover):
 		sys.stderr.write("%d#: %s" %(pid,str))
 		if str.find("bind failed") != -1:
 			raise PortInUseException("sshd", self.port)
-
-	def setInputfile(self,fname):
-		self.inputFile = fname
-
-	def setOutputfile(self,fname):
-		self.outputFile = fname
 
 	def setAuthorizedKey(self,key):
 		"""Drop the authorized key into a secure temporary file"""
@@ -69,12 +64,6 @@ class SCPMover(DataMover):
 	def clientSetup(self):
 		# Set up a user key
 		self.userkey,self.userkeypub = self.genkey("dsa") 
-
-	def needSubAttrs(self):
-		return True
-
-	def needPubKey(self):
-		return True
 
 	def client(self,server,port=5001):
 		self.setExe(self.SCPexe)

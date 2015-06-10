@@ -42,39 +42,42 @@ def performPlacement(inputFile, outputFile):
 
 
 	movers = [ ("iperf", IperfMover.Iperf(), ChirpTools.ChirpInfo("iperf")), 
-				("scp", SCPMover.SCPMover(), ChirpTools.ChirpInfo("scp"))]
+				("scp", SCPMover.SCPMover(), ChirpTools.ChirpInfo("scp")),
+				("netcat", NetcatMover.Netcat(),
+						ChirpTools.ChirpInfo("netcat")) ]
 	
 	for name,pMover,pChirp in movers:
 		if int(os.environ['_CONDOR_PROCNO']) == 0:
 			iam = "client"
 			try:
 				# Set up the client
-				pChirp.clearUserkey()
+				pChirp.clearUserkey() if pMover.hasRequirement("PubKey") else None 
 				pMover.clientSetup()
 				# Get the pubkey and chirp it (only chirps if the mover
 				# explicitly defines key file during clientSetup() ) 
 				pChirp.postUserkey(pMover.getUserPubKeyFile())
 				pMover.setTimeout(clientTimeout)
 
-				if pMover.isFileTransfer():
-					pMover.setInputfile(inputFile)
+				if pMover.hasRequirement("FileTransfer"):
+					pMover.setInputFile(inputFile)
 					md5 = "'%s'" % pMover.md5(inputFile)
 					transferred = os.path.getsize(inputFile)
 
-				# Time the client (iperf)
+				# Client Start 
 				pChirp.ulog(iam,"start")
 				(host,port) = pChirp.getHostPort()
-#				# Get the subordinate attributed after the server has been set up
-				if pMover.needSubAttrs():
+				# Get the subordinate attributed after the
+				# server has been set up
+				if pMover.hasRequirement("SubAttrs"):
 					pMover.setUser(pChirp.getUser())
-					pMover.setOutputfile(pChirp.getOutputfile())
+					pMover.setOutputFile(pChirp.getOutputfile())
 
-				## Finally, perform the actual placemen
+				## Finally, perform the actual placement
 				tstart = time.time()
 				pMover.client(host,port)
 				tend = time.time()
 
-				if pMover.isFileTransfer(): 
+				if pMover.hasRequirement("FileTransfer"): 
 					# get the server's MD5 Calculation and Compare
 					xmd5 = pChirp.getMD5()
 					ok = 1 if md5 == xmd5 else 0
@@ -89,21 +92,22 @@ def performPlacement(inputFile, outputFile):
 				pChirp.ulog(iam,"end")
 			except IDPLException,e:
 				pChirp.ulog(iam,"error %s" % e.message)
-
 				print "Client had Exception: " + e.message
+				break;
+				
 		else:
 			iam = "server"
 			try:
 				# Set up the Server
 				pChirp.ulog(iam,"start")
 				pMover.serverSetup()
-				if pMover.needPubKey():
+				if pMover.hasRequirement("PubKey"):
 					# read the public key of the connecting user
 					pMover.setAuthorizedKey(pChirp.getUserkey())
 
 				pMover.setOutputFile(outputFile)
 
-				if pMover.needSubAttrs():
+				if pMover.hasRequirement("SubAttrs"):
 					## set up some Chirped Attrs, that won't be read by
 					# client until server sets up 
 					pChirp.clearMD5()
@@ -114,7 +118,7 @@ def performPlacement(inputFile, outputFile):
 				pMover.setPortReporter(pChirp.postPort)
 				# Run it
 				pMover.server()
-				if pMover.isFileTransfer():
+				if pMover.hasRequirement("FileTransfer"):
 					# post md5
 					pChirp.postMD5(pMover.md5(outputFile))
 
@@ -123,6 +127,7 @@ def performPlacement(inputFile, outputFile):
 			except IDPLException, e:
 				pChirp.ulog(iam,"error %s" % e.message)
 				print "Server had Exception: " + e.message
+				break;  
 			finally:
 				pChirp.clearPort()	
 
@@ -137,11 +142,11 @@ def main(argv):
 	try:
 		opts, args = getopt.getopt(argv,"hi:o:",["ifile=","ofile="])
 	except getopt.GetoptError:
-		print 'placement3.py -i <inputfile> -o <outputfile>'
+		print 'placement4.py -i <inputfile> -o <outputfile>'
 		sys.exit(2)
 	for opt, arg in opts:
 		if opt == '-h':
-			print 'placement3.py -i <inputfile> -o <outputfile>'
+			print 'placement4.py -i <inputfile> -o <outputfile>'
 			sys.exit()
 		elif opt in ("-i", "--ifile"):
 			inputfile = arg

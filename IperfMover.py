@@ -21,6 +21,7 @@ class Iperf(DataMover):
 		self.setErrHandler(self.iperferr)
 		self.rawData = None
 		self.transferred=0
+		self.deleteRequirement("FileTransfer")
 	
 	def iperfout(self,pid,str):
 		""" stdout handler when running iperf under TimedExec """

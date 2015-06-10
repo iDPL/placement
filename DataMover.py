@@ -21,6 +21,9 @@ class DataMover(object):
 		self.portReporter = Reporter().noReport
 		self.inputFile = None
 		self.outputFile = None
+		## List of Strings that are "requirements" for a particular dataMover
+		self.requirements=[]
+		self.addRequirement("FileTransfer")
 
 	
 	## Various Getters including abstract ones
@@ -86,17 +89,17 @@ class DataMover(object):
 	def serverSetup(self):
 		"""Generic  Server Setup prior to Movement"""
 
-	def needSubAttrs(self):
-		"""Specific mover should define if additional attributes needed """
-		return False
-	
-	def needPubKey(self):
-		"""Specific mover should define if pubkey is required by server """
-		return False
+	## Methods to determine requirements of a particular Mover
+	def hasRequirement(self,req):
+		return (req in self.requirements)
 
-	def isFileTransfer(self):
-		"""Mover is a File Transfer, Default is True """
-		return True 
+	def addRequirement(self,req):
+		if not self.hasRequirement(req):
+			self.requirements.append(req)
+	
+	def deleteRequirement(self,req):
+		while self.hasRequirement(req):
+			self.requirements.remove(req)
 
 	def run(self):
 

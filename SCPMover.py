@@ -70,6 +70,12 @@ class SCPMover(DataMover):
 		# Set up a user key
 		self.userkey,self.userkeypub = self.genkey("dsa") 
 
+	def needSubAttrs(self):
+		return True
+
+	def needPubKey(self):
+		return True
+
 	def client(self,server,port=5001):
 		self.setExe(self.SCPexe)
 		if self.user is None:

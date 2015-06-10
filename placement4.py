@@ -38,123 +38,95 @@ def writeRecord(tag, src,dest,start,end,md5_equal,duration,kbytes):
 ## *****************************
 ## Actually performn the placement 
 ## *****************************
-def performPlacement(inputFile,outputFile):
-	iperf = IperfMover.Iperf()
-	iperfChirp = ChirpTools.ChirpInfo("iperf")
-	scp = SCPMover.SCPMover()
-	scpChirp = ChirpTools.ChirpInfo("scp")
-	
-	if int(os.environ['_CONDOR_PROCNO']) == 0:
-		iam = "client"
-		#####   IPERF TEST
-		try:
-			# Set up the client
-			iperf.setTimeout(clientTimeout)
-			# Time the client (iperf)
-			iperfChirp.ulog(iam,"start")
-			(host,port) = iperfChirp.getHostPort()
-			tstart = time.time()
-			iperf.client(host,port)
-			tend = time.time()
-			writeRecord("iperf",socket.getfqdn(),host,tstart,tend,1,tend-tstart,
-				int(iperf.transferredKB))
-			# Finish (iperf)
-			iperfChirp.ulog(iam,"end")
-		except IDPLException,e:
-			iperfChirp.ulog(iam,"error %s" % e.message)
-			print "Client had Exception: " + e.message
-	
-		#####   SCP TEST
-		try:
-			# Set up the client
-			scpChirp.clearUserkey()
-			scp.clientSetup()
-			# Get the pubkey and chirp it
-			scpChirp.postUserkey(scp.getUserPubKeyFile())
-			scp.setTimeout(clientTimeout)
-			scp.setInputfile(inputFile)
-			md5 = "'%s'" % scp.md5(inputFile)
+def performPlacement(inputFile, outputFile):
 
-			# Get chirped attributes, first one is available only when server
-			# is up and running.  
-			(host,port) = scpChirp.getHostPort()
-			# Get the subordinate attributed after the server has been set up
-			scp.setUser(scpChirp.getUser())
-			scp.setOutputfile(scpChirp.getOutputfile())
-		
-			# Time the client (scp)
-			scpChirp.ulog(iam,"start")
-			# Do the transfer
-			tstart = time.time()
-			scp.client(host,port)
-			tend = time.time()
-			transferred = os.path.getsize(inputFile)
-			
-			# get the server's MD5 Calculation and Compare
-			xmd5 = scpChirp.getMD5()
-			ok = 1 if md5 == xmd5 else 0
-			writeRecord("scp",socket.getfqdn(),host,tstart,tend,ok,
-				tend-tstart,int(transferred))
-			# Finish (scp)
-			scpChirp.ulog(iam,"end")
 
-		except IDPLException,e:
-			scpChirp.ulog(iam,"error %s" % e.message)
-			print "Client had Exception: " + e.message
-		finally:
-			scpChirp.clearUserkey()
-	else:
-		iam = "server"
-		#####   IPERF TEST
-		try:
-			# Set up the Server
-			iperfChirp.ulog(iam,"start")
-			iperf.setTimeout(serverTimeout)
-			iperf.setPortReporter(iperfChirp.postPort)
-			# Run it
-			iperf.server()
-			# Finish
-			iperfChirp.ulog(iam,"end")
-		except IDPLException, e:
-			iperfChirp.ulog(iam,"error %s" % e.message)
-			print "Server had Exception: " + e.message
-		finally:
-			iperfChirp.clearPort()	
+	movers = [ ("iperf", IperfMover.Iperf(), ChirpTools.ChirpInfo("iperf")), 
+				("scp", SCPMover.SCPMover(), ChirpTools.ChirpInfo("scp"))]
 	
-		#####   SCP TEST
-		try:
-			# Set up the Server prior to running it
-			scp.serverSetup()
+	for name,pMover,pChirp in movers:
+		if int(os.environ['_CONDOR_PROCNO']) == 0:
+			iam = "client"
+			try:
+				# Set up the client
+				pChirp.clearUserkey()
+				pMover.clientSetup()
+				# Get the pubkey and chirp it (only chirps if the mover
+				# explicitly defines key file during clientSetup() ) 
+				pChirp.postUserkey(pMover.getUserPubKeyFile())
+				pMover.setTimeout(clientTimeout)
 
-			# read the public key of the connecting user
-			scp.setAuthorizedKey(scpChirp.getUserkey())
-			scp.setOutputFile(outputFile)
-			scp.setTimeout(serverTimeout)
-			scp.setPortReporter(scpChirp.postPort)
+				if pMover.isFileTransfer():
+					pMover.setInputfile(inputFile)
+					md5 = "'%s'" % pMover.md5(inputFile)
+					transferred = os.path.getsize(inputFile)
 
-			## set up some Chirped Attrs, that won't be read by
-			# client until server sets up 
-			scpChirp.clearMD5()
-			scpChirp.postOutputfile(outputFile)
-			print "server getpass.getuser():", getpass.getuser()
-			print "server  pwd.getpwuid(os.geteuid()).pw_name", pwd.getpwuid(os.geteuid()).pw_name 
-			print "server whoami:"
-			os.system("whoami")
-			print "==server whoami"
-			scpChirp.postUser(pwd.getpwuid(os.geteuid()).pw_name)
-	
-			# Run it
-			scp.server()
-			# post md5
-			scpChirp.postMD5(scp.md5(outputFile))
-			# Finish
-			scpChirp.ulog(iam,"end")
-		except IDPLException, e:
-			scpChirp.ulog(iam,"error %s" % e.message)
-			print "Server had Exception: " + e.message
-		finally:
-			scpChirp.clearPort()	
-	
+				# Time the client (iperf)
+				pChirp.ulog(iam,"start")
+				(host,port) = pChirp.getHostPort()
+#				# Get the subordinate attributed after the server has been set up
+				if pMover.needSubAttrs():
+					pMover.setUser(pChirp.getUser())
+					pMover.setOutputfile(pChirp.getOutputfile())
+
+				## Finally, perform the actual placemen
+				tstart = time.time()
+				pMover.client(host,port)
+				tend = time.time()
+
+				if pMover.isFileTransfer(): 
+					# get the server's MD5 Calculation and Compare
+					xmd5 = pChirp.getMD5()
+					ok = 1 if md5 == xmd5 else 0
+				else:
+					ok = 1   # no file to check MD5sum  
+					transferred = pMover.transferred
+
+				writeRecord(name,socket.getfqdn(),host,tstart,tend,1,tend-tstart,
+					int(transferred))
+
+				# Finish (client)
+				pChirp.ulog(iam,"end")
+			except IDPLException,e:
+				pChirp.ulog(iam,"error %s" % e.message)
+
+				print "Client had Exception: " + e.message
+		else:
+			iam = "server"
+			try:
+				# Set up the Server
+				pChirp.ulog(iam,"start")
+				pMover.serverSetup()
+				if pMover.needPubKey():
+					# read the public key of the connecting user
+					pMover.setAuthorizedKey(pChirp.getUserkey())
+
+				pMover.setOutputFile(outputFile)
+
+				if pMover.needSubAttrs():
+					## set up some Chirped Attrs, that won't be read by
+					# client until server sets up 
+					pChirp.clearMD5()
+					pChirp.postOutputfile(outputFile)
+					pChirp.postUser(pwd.getpwuid(os.geteuid()).pw_name)
+
+				pMover.setTimeout(serverTimeout)
+				pMover.setPortReporter(pChirp.postPort)
+				# Run it
+				pMover.server()
+				if pMover.isFileTransfer():
+					# post md5
+					pChirp.postMD5(pMover.md5(outputFile))
+
+				# Finish
+				pChirp.ulog(iam,"end")
+			except IDPLException, e:
+				pChirp.ulog(iam,"error %s" % e.message)
+				print "Server had Exception: " + e.message
+			finally:
+				pChirp.clearPort()	
+
+
 ## *****************************
 ## main routine
 ## *****************************

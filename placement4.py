@@ -42,12 +42,14 @@ def writeRecord(tag, src,dest,start,end,md5_equal,duration,kbytes):
 def performPlacement(inputFile, outputFile):
 
 
+	## This does a a)iperf, b)fdt, c) scp, d) netcat, e) iperf 
+  	## sequence of tests.  remove any of the (,,) to remove a test 
 	movers = [ ("iperf", IperfMover.Iperf(), ChirpTools.ChirpInfo("iperf")), 
+				("fdt", FDTMover.FDTMover(), ChirpTools.ChirpInfo("fdt")),
 				("scp", SCPMover.SCPMover(), ChirpTools.ChirpInfo("scp")),
 				("netcat", NetcatMover.Netcat(),
-						ChirpTools.ChirpInfo("netcat")) ]
-	
-	movers = [ ("fdt", FDTMover.FDTMover(), ChirpTools.ChirpInfo("fdt")) ]  
+						ChirpTools.ChirpInfo("netcat")),
+				("iperf", IperfMover.Iperf(), ChirpTools.ChirpInfo("iperf")) ] 
 
 	for name,pMover,pChirp in movers:
 		if int(os.environ['_CONDOR_PROCNO']) == 0:

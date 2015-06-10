@@ -3,6 +3,7 @@ import DataMover
 import SCPMover 
 import IperfMover
 import NetcatMover
+import FDTMover
 import CondorTools
 import ChirpTools 
 from IDPLException import *
@@ -36,7 +37,7 @@ def writeRecord(tag, src,dest,start,end,md5_equal,duration,kbytes):
 	chirp.ulog("writerecord", logmessage)
 
 ## *****************************
-## Actually performn the placement 
+## Actually perform the placement 
 ## *****************************
 def performPlacement(inputFile, outputFile):
 
@@ -46,6 +47,8 @@ def performPlacement(inputFile, outputFile):
 				("netcat", NetcatMover.Netcat(),
 						ChirpTools.ChirpInfo("netcat")) ]
 	
+	movers = [ ("fdt", FDTMover.FDTMover(), ChirpTools.ChirpInfo("fdt")) ]  
+
 	for name,pMover,pChirp in movers:
 		if int(os.environ['_CONDOR_PROCNO']) == 0:
 			iam = "client"

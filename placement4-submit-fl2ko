@@ -7,24 +7,24 @@
 universe = parallel
 executable = placement4.py
 
-EXPERIMENT=fl2mo
+EXPERIMENT=fl2ko
 SRC_HOST=flashio-osg.calit2.optiputer.net
 SRC_PATH=/home/idpl/100M
-DST_HOST=mongo.mayer.optiputer.net
+DST_HOST=komatsu.chtc.wisc.edu
 DST_PATH=100M
 
 
 ### Crondor Settings
 # A run is allowed to take this long (in seconds) to set up; otherwise
 # that run is skipped
-cron_window=420
+#cron_window=420
 
 # Try to run jobs on this schedule
-cron_minute=50
-cron_hour=24/2
+#cron_minute=50
+#cron_hour=24/2
 #
 # Keep running the job
-on_exit_remove=false
+#on_exit_remove=false
 
 # Arguments are:
 # 1. File to send (on the sending host)

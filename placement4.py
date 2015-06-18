@@ -90,7 +90,7 @@ def performPlacement(inputFile, outputFile):
 					ok = 1   # no file to check MD5sum  
 					transferred = pMover.transferred
 
-				writeRecord(name,socket.getfqdn(),host,tstart,tend,1,tend-tstart,
+				writeRecord(name,socket.getfqdn(),host,tstart,tend,ok,tend-tstart,
 					int(transferred))
 
 				# Finish (client)

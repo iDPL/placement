@@ -17,36 +17,36 @@ tests from flashio-osg), each host schedules a test as the client (sender)
 | EXPERIMENT | DST_HOST             | File Size | Minute   |
 |------------|----------------------|:---------:|:--------:|
 | buaa2cnic  | idpl.elab.cnic.cn    | 100MB     | 0        |
-| buaa2ko    | komatsu.chtc.wisc.edu| 10MB      | 10       |
-| buaa2mu    | murpa.rocksclusters.org| 10MB    | 30       |
+| buaa2ucsd    | komatsu.chtc.wisc.edu| 10MB      | 10       |
+| buaa2ucsd    | murpa.rocksclusters.org| 10MB    | 30       |
 
-** idpl.elab **
+**idpl.elab**
 
 | EXPERIMENT | DST_HOST             | File Size | Minute   |
 |------------|----------------------|:---------:|:--------:|
 | cnic2buaa  | mickey.buaa.edu.cn   | 100MB     | 5        |
-| cnic2ko    | komatsu.chtc.wisc.edu| 10MB      | 30       |
-| cnic2mu    | murpa.rocksclusters.org| 10MB    | 10       |
+| cnic2wisc    | komatsu.chtc.wisc.edu| 10MB      | 30       |
+| cnic2ucsd    | murpa.rocksclusters.org| 10MB    | 10       |
 
-** komatsu.chtc.wisc.edu **
-
-| EXPERIMENT | DST_HOST             | File Size | Minute   |
-|------------|----------------------|:---------:|:--------:|
-| ko2buaa    | mickey.buaa.edu.cn                | 10MB     |   20    |
-| ko2cnic    | idpl.elab.cnic.cn                 | 10MB     |   40    |
-| ko2mu      | murpa.rocksclusters.org           | 100MB    |   0     |
-| ko2fl      | flashio-osg.calit2.optiputer.net  | 100MB    |   50    |
-
-** murpa.rocksclusters.org **
+**komatsu.chtc.wisc.edu**
 
 | EXPERIMENT | DST_HOST             | File Size | Minute   |
 |------------|----------------------|:---------:|:--------:|
-| mu2buaa    | mickey.buaa.edu.cn                | 10MB     |   40    |
-| mu2cnic    | idpl.elab.cnic.cn                 | 10MB     |   20    |
-| mu2ko      | komatsu.chtc.wisc.edu             | 100MB    |    5    |
-| fl2ko      | komatsu.chtc.wisc.edu             | 100MB    |   55    |
-| fl2mo      | mongo.mayer.optiputer.net         | 1G       |   15    | 
-| mo2fl      | flashio-osg.calit2.optiputer.net  | 1G       |   30    |
+| wiscbuaa    | mickey.buaa.edu.cn                | 10MB     |   20    |
+| wisc2cnic    | idpl.elab.cnic.cn                 | 10MB     |   40    |
+| wisc2ucsd | murpa.rocksclusters.org           | 100MB    |   0     |
+| wisc2calit      | flashio-osg.calit2.optiputer.net  | 100MB    |   50    |
 
-*Note*:fl2mo and mo2fl are internal to UCSD on a 10G link. Scheduled by murpa.
+**murpa.rocksclusters.org**  (calit is flashio-osg.calit2.optiputer.net)
+
+| EXPERIMENT | DST_HOST             | File Size | Minute   |
+|------------|----------------------|:---------:|:--------:|
+| ucsd2buaa    | mickey.buaa.edu.cn                | 10MB     |   40    |
+| ucsd2cnic    | idpl.elab.cnic.cn                 | 10MB     |   20    |
+| ucsd2wisc      | komatsu.chtc.wisc.edu             | 100MB    |    5    |
+| calit2wisc      | komatsu.chtc.wisc.edu             | 100MB    |   55    |
+| calit2physics   | mongo.mayer.optiputer.net         | 1G       |   15    | 
+| physics2calit      | flashio-osg.calit2.optiputer.net  | 1G       |   30    |
+
+*Note*:calit2physics and physics2calit2 are internal to UCSD on a 10G link. Scheduled by murpa. should be non-conflicting
 

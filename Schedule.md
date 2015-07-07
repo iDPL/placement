@@ -1,18 +1,19 @@
 Full mesh schedule for placement.
 
-There are five endpoints involved in the schedule
+There are six endpoints involved in the schedule
 
  1. Beihang Univeristy, China  (Mickey)
  2. CNIC, China (idpl.elab)
  3. University of Wisconsin (komatsu)
  4. University of California, San Diego 1G  (murpa)
- 5. University of California, San Diego 10G (flashio-osg)
+ 5. Calit2, UC San Diego 10G (flashio-osg)
+ 6. Physics, UC San Diego 40G (mongo)
 
 The first four run condor schedd (scheduler) services. Each of the sites
 runs tests every hour. For simplicity (except for murpa, which also schedules
 tests from flashio-osg), each host schedules a test as the client (sender)
 
-** Mickey **
+**Mickey**
 
 | EXPERIMENT | DST_HOST             | File Size | Minute   |
 |------------|----------------------|:---------:|:--------:|
@@ -48,5 +49,5 @@ tests from flashio-osg), each host schedules a test as the client (sender)
 | calit2physics   | mongo.mayer.optiputer.net         | 1G       |   15    | 
 | physics2calit      | flashio-osg.calit2.optiputer.net  | 1G       |   30    |
 
-*Note*:calit2physics and physics2calit2 are internal to UCSD on a 10G link. Scheduled by murpa. should be non-conflicting
+*Note:* calit2physics and physics2calit2 are internal to UCSD on a 10G link. Scheduled by murpa. should be non-conflicting
 

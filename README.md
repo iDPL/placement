@@ -23,7 +23,7 @@ There are several variables that define the placement job. Currently a placement
 
 The parameters of the experiment are
  PARAMETER NAME |  Description
- -----------------------------
+ ---------------|-------------
  EXPERIMENT |  Name of the experiement. Name of subdirectory for data
  SRC_HOST   |  Host **from** which data will be copied
  DST_HOST   |  Host **to** which data will be copied

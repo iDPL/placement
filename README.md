@@ -22,15 +22,16 @@ There are several variables that define the placement job. Currently a placement
 
 
 The parameters of the experiment are
- PARAMETER NAME |  Description
- ---------------|-------------
- EXPERIMENT |  Name of the experiement. Name of subdirectory for data
- SRC_HOST   |  Host **from** which data will be copied
- DST_HOST   |  Host **to** which data will be copied
- SRC_PATH   |  Full path name of the file to be copied
- DST_PATH   |  *relative* path to which file will be copied
- cron_hour  |  hours on which placement will occur
- cron_minute|  minute on which placement will occur
+
+|PARAMETER NAME |  Description|
+|---------------|-------------|
+| EXPERIMENT |  Name of the experiement. Name of subdirectory for data |
+|SRC_HOST   |  Host **from** which data will be copied|
+|DST_HOST   |  Host **to** which data will be copied |
+|SRC_PATH   |  Full path name of the file to be copied |
+| DST_PATH   |  *relative* path to which file will be copied |
+| cron_hour  |  hours on which placement will occur| 
+| cron_minute|  minute on which placement will occur|
 
 
 To define new placement job

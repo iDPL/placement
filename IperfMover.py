@@ -51,7 +51,7 @@ class Iperf(DataMover):
 			raise PortInUseException("iperf", self.port)
 
 	def client(self,server,port=5001):
-		self.setArgs(["-c","%s" % server,"-p","%d" % int(port),"-f","k"])
+		self.setArgs(["-c","%s" % server,"-p","%d" % int(port),"-f","k","-t","20"])
 		self.run()
 
 	def server(self):

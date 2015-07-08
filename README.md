@@ -35,13 +35,13 @@ The parameters of the experiment are
 
 
 To define new placement job
- 1. copy placement4.dag to <EXPERIMENT>.dag
- 2. edit <EXPERIMENT>.dag to change the above parameters on the **VARS** line
- 3. edit <EXPERIMENT>.dag to change fl2mo to EXPERIMENT on the **SCRIPT PRE** 
+ 1. copy placement4.dag to \<EXPERIMENT\>.dag
+ 2. edit \<EXPERIMENT\>.dag to change the above parameters on the **VARS** line
+ 3. edit \<EXPERIMENT\>.dag to change fl2mo to EXPERIMENT on the **SCRIPT PRE** 
  4. submit your job with `condor_submit_dag <EXPERIMENT>.dag`
 
 
-The output file will be <EXPERIMENT>/placement4.log. Each successful placement will create a *writerecord* line.
+The output file will be \<EXPERIMENT\>/placement4.log. Each successful placement will create a *writerecord* line.
 
 *Note*: iperf reports Kilobytes.  The other tools report Bytes.
 

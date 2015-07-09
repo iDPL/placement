@@ -18,7 +18,7 @@ tests from flashio-osg), each host schedules a test as the client (sender)
 | EXPERIMENT | DST_HOST             | File Size | Minute   |
 |------------|----------------------|:---------:|:--------:|
 | buaa2cnic  | idpl.elab.cnic.cn    | 100MB     | 0        |
-| buaa2ucsd    | komatsu.chtc.wisc.edu| 10MB      | 10       |
+| buaa2wisc    | komatsu.chtc.wisc.edu| 10MB      | 10       |
 | buaa2ucsd    | murpa.rocksclusters.org| 10MB    | 30       |
 
 **idpl.elab**

@@ -30,15 +30,17 @@ tests from flashio-osg), each host schedules a test as the client (sender)
 | cnic2ucsd    | murpa.rocksclusters.org| 10MB    | 10       |
 
 **komatsu.chtc.wisc.edu**
+<p> subdirectory for experiments: `/home/phil/mesh/placement`
 
 | EXPERIMENT | DST_HOST             | File Size | Minute   |
 |------------|----------------------|:---------:|:--------:|
-| wiscbuaa    | mickey.buaa.edu.cn                | 10MB     |   20    |
+| wisc2buaa    | mickey.buaa.edu.cn                | 10MB     |   20    |
 | wisc2cnic    | idpl.elab.cnic.cn                 | 10MB     |   40    |
 | wisc2ucsd | murpa.rocksclusters.org           | 100MB    |   0     |
 | wisc2calit      | flashio-osg.calit2.optiputer.net  | 100MB    |   50    |
 
 **murpa.rocksclusters.org**  (calit is flashio-osg.calit2.optiputer.net)
+<p> subdirectory for experiments: `/home/phil/mesh/placement`
 
 | EXPERIMENT | DST_HOST             | File Size | Minute   |
 |------------|----------------------|:---------:|:--------:|

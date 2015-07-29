@@ -14,6 +14,7 @@ runs tests every hour. For simplicity (except for murpa, which also schedules
 tests from flashio-osg), each host schedules a test as the client (sender)
 
 **Mickey**
+<p> subdirectory for experiments: `/home/zwzhang/placement4`
 
 | EXPERIMENT | DST_HOST             | File Size | Minute   |
 |------------|----------------------|:---------:|:--------:|
@@ -22,6 +23,7 @@ tests from flashio-osg), each host schedules a test as the client (sender)
 | buaa2ucsd    | murpa.rocksclusters.org| 10MB    | 30       |
 
 **idpl.elab**
+<p> subdirectory for experiments: `/home/zwzhang/mesh/placement`
 
 | EXPERIMENT | DST_HOST             | File Size | Minute   |
 |------------|----------------------|:---------:|:--------:|

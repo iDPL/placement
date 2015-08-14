@@ -72,6 +72,11 @@ class SCPMover(DataMover):
 		args = ["-o","StrictHostKeyChecking=no"]
 		args.extend(["-i",self.userkey])
 		args.extend(["-P","%d" % int(port)])
+		if self.isV6Test():
+			args.extend(["-6"])
+			server = self.v6Names[server]
+			if server.find(":") >= 0:
+				server = "[%s]" % server 
 		args.extend([self.inputFile, "%s@%s:%s" % 
 			(self.user, server,self.outputFile)])
 		self.setArgs(args)
@@ -80,6 +85,8 @@ class SCPMover(DataMover):
 
 	def server(self):
 		args = ["-o","AuthorizedKeysFile=%s" % self.userkeypub]
+		if self.isV6Test():
+			args.extend(["-6"])
 		args.extend (["-o","StrictModes=no"])
 		args.extend (["-o","UsePam=no"])
 		args.extend (["-o","PermitRootLogin=no"])
@@ -121,4 +128,10 @@ class SCPMover(DataMover):
 			raise SSHServerException("ssh-keygen",err)
 		return (key,keypub)
 		
+class SCPMover6(SCPMover):
+	def __init__(self, workDir=None):
+		super(SCPMover6,self).__init__(workDir)
+		self.setV6Test(True)
+
+
 # vim: ts=4:sw=4:

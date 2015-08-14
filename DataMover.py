@@ -25,7 +25,16 @@ class DataMover(object):
 		self.requirements=[]
 		self.addRequirement("FileTransfer")
 
-	
+		## add v6 addresses for v4 names, used when performing a IPv6 test
+		self.v6Names = { \
+			'mickey.buaa.edu.cn':'2001:da8:203:d406:16da:e9ff:fef9:b68f', \
+			'komatsu.chtc.wisc.edu':'2607:f388:108e:2795::a', \
+			'flashio-osg.calit2.optiputer.net':'2607:f720:1700:31d::61', \
+			'mongo.mayer.optiputer.net':'2607:f720:1700:1b32::6' }
+		# default tests to v4
+		self.v6Test = False
+
+
 	## Various Getters including abstract ones
 	def getPortRange(self,low,high):
 		return (self.lowPort, self.highPort)
@@ -33,6 +42,9 @@ class DataMover(object):
 	def getUserPubKeyFile(self):
 		"""Overridden by movers that need a public key"""
 		return None 
+
+	def isV6Test(self):
+		return self.v6Test
 
 	##  Various Setters
 	def setPortRange(self,low,high):
@@ -69,6 +81,9 @@ class DataMover(object):
 	def setTimeout(self,timeout):
 		self.timeout = timeout
 
+	def setV6Test(self,flag):
+		self.v6Test = flag
+
 	## End of Setters
 
 	def md5(self,fname):
@@ -88,6 +103,7 @@ class DataMover(object):
 		pass
 	def serverSetup(self):
 		"""Generic  Server Setup prior to Movement"""
+
 
 	## Methods to determine requirements of a particular Mover
 	def hasRequirement(self,req):

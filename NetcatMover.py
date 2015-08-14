@@ -47,4 +47,25 @@ class Netcat(DataMover):
 		if self.oFile is not None:
 			self.oFile.close()
 
+
+class Netcat6(Netcat):
+	""" Netcat-based Data Mover """
+	def __init__(self):
+		super(Netcat6,self).__init__()
+		self.setV6Test(True)
+
+	def client(self,server,port=5011):
+		self.setArgs(["-6","%s" % self.v6Names[server],"%d" % int(port)])
+		self.run()
+		if self.oFile is not None:
+			self.oFile.close()
+
+	def server(self):
+		self.setArgs(["-d", "-6"])
+		self.setPortArg("-l")
+		self.setPortRange(5011,5020)
+		self.run()
+		if self.oFile is not None:
+			self.oFile.close()
+
 # vim: ts=4:sw=4:

@@ -58,4 +58,20 @@ class Iperf(DataMover):
 	def isFileTransfer(self):
 		"""Iperf is memory to memory """
 		return False 
+
+class Iperf6(Iperf):
+	def __init__(self):
+		super(Iperf6,self).__init__()
+		self.setV6Test(True)
+
+	def client(self,server,port=5001):
+		self.setArgs(["-V", "-c","%s" % self.v6Names[server],"-p","%d" % int(port),"-f","k"])
+		self.run()
+
+	def server(self):
+		self.setArgs(["-V", "-s"])
+		self.setPortRange(5001,5010)
+		self.run()
+
+
 # vim: ts=4:sw=4:

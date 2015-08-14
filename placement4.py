@@ -78,9 +78,7 @@ def performPlacement(inputFile, outputFile):
 					pMover.setOutputFile(pChirp.getOutputfile())
 
 				## Finally, perform the actual placement
-				tstart = time.time()
 				pMover.client(host,port)
-				tend = time.time()
 
 				if pMover.hasRequirement("FileTransfer"): 
 					# get the server's MD5 Calculation and Compare
@@ -90,7 +88,8 @@ def performPlacement(inputFile, outputFile):
 					ok = 1   # no file to check MD5sum  
 					transferred = pMover.transferred
 
-				writeRecord(name,socket.getfqdn(),host,tstart,tend,ok,tend-tstart,
+				(tstart,tend,delta) = pMover.getTimers()
+				writeRecord(name,socket.getfqdn(),host,tstart,tend,ok,delta,
 					int(transferred))
 
 				# Finish (client)

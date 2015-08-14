@@ -21,6 +21,9 @@ class DataMover(object):
 		self.portReporter = Reporter().noReport
 		self.inputFile = None
 		self.outputFile = None
+		self.tstart=time.time()
+		self.tend=time.time()
+		self.delta = -1
 		## List of Strings that are "requirements" for a particular dataMover
 		self.requirements=[]
 		self.addRequirement("FileTransfer")
@@ -42,6 +45,12 @@ class DataMover(object):
 	def getUserPubKeyFile(self):
 		"""Overridden by movers that need a public key"""
 		return None 
+	def getTimers(self):
+		""" return the timers from the run """
+		## delta may have been extracted from tool output, see IperfMover
+		if self.delta < 0:
+			self.delta=self.tend - self.tstart
+		return(self.tstart,self.tend, self.delta)
 
 	def isV6Test(self):
 		return self.v6Test
@@ -127,10 +136,12 @@ class DataMover(object):
 		if self.lowPort is None or self.highPort is None:
 			targs=[self.exe]
 			targs.extend(self.args)
+			self.tstart=time.time()
 			resultcode,output,err=TimedExec.runTimedCmd(self.timeout,
 				targs, indata=iFile,
 				outhandler=self.stdoutHandler, 
 				errhandler=self.stderrHandler)
+			self.tend=time.time()
 			if resultcode < 0:
 				sys.stdout.write("Result code: %d\n" % resultcode)
 				if iFile is not None:
@@ -148,10 +159,12 @@ class DataMover(object):
 					## Then next port is tried.
 					rd = TimedExec.RunDelayed(2,self.portReporter,self.port)
 					rd.run()
+					self.tstart=time.time()
 					resultcode,output,err=TimedExec.runTimedCmd(self.timeout,
 						targs, indata=iFile,
 						outhandler=self.stdoutHandler, 
 						errhandler=self.stderrHandler)
+					self.tend=time.time()
 					rd.join()
 					if resultcode < 0:
 						sys.stdout.write("Result code: %d\n" % resultcode)

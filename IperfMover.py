@@ -22,6 +22,7 @@ class Iperf(DataMover):
 		self.rawData = None
 		self.transferred=0
 		self.deleteRequirement("FileTransfer")
+		self.isServer = False
 	
 	def iperfout(self,pid,str):
 		""" stdout handler when running iperf under TimedExec """
@@ -35,8 +36,11 @@ class Iperf(DataMover):
 			if str.find("its/sec") != -1:
 				self.transferred = str.split()[-4]
 				self.rawData = " ".join(str.split()[-2:])
-				os.kill(pid,signal.SIGTERM)
-				sys.stdout.write("Killing pid %d\n" % pid)
+				interval=(str.split()[-6]).split('-')
+				self.delta = float(interval[1])-float(interval[0])
+				if self.isServer:
+					os.kill(pid,signal.SIGTERM)
+					sys.stdout.write("Killing pid %d\n" % pid)
 		except IDPLException,e:
 			sys.stderr.write(e.message)
 
@@ -53,6 +57,7 @@ class Iperf(DataMover):
 	def server(self):
 		self.setArgs(["-s"])
 		self.setPortRange(5001,5010)
+		self.isServer = True
 		self.run()
 
 	def isFileTransfer(self):

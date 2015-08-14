@@ -65,4 +65,8 @@ class FDTMover(DataMover):
 		print "server: " , args
 		self.run()
 
+class FDTMover6(FDTMover):
+	def __init__(self, workDir=None):
+		super(FDTMover6,self).__init__()
+		self.setV6Test = True
 # vim: ts=4:sw=4:

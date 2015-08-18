@@ -49,6 +49,8 @@ class FDTMover(DataMover):
 		self.user = nuser
 
 	def client(self,server,port=5001):
+		if self.isV6Test():
+			server="[%s]" % self.v6Names[server]
 		args = ["-jar", self.FDTJAR, "-noupdates" ]
 		args.extend(["-p", str(port)])
 		args.extend(["-c", server, self.inputFile])

@@ -55,6 +55,7 @@ class FDTMover(DataMover):
 		args.extend(["-p", str(port)])
 		args.extend(["-c", server, self.inputFile])
 		args.extend(["-d","."])
+		args.extend(["-ss","1M"])
 		self.setArgs(args)
 		print "client: " , args
 		self.run()

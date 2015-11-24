@@ -41,7 +41,7 @@ input   = /dev/null
 output = $(EXPERIMENT)/detail/$(PLACEMENT).out.$(Cluster).$(Node)
 error  = $(EXPERIMENT)/detail/$(PLACEMENT).err.$(Cluster).$(Node)
 log    = $(EXPERIMENT)/$(PLACEMENT).log
-getenv = true
+#getenv = true
 
 +SrcHost = "$(SRC_HOST)"
 +SrcPath = "$(SRC_PATH)"

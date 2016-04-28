@@ -70,7 +70,9 @@ def performPlacement(inputFile, outputFile):
 
 				# Client Start 
 				pChirp.ulog(iam,"start")
-				(host,port) = pChirp.getHostPort()
+				if not pMover.hasRequirement("NoPortsNeeded"):
+					(host,port) = pChirp.getHostPort()
+
 				# Get the subordinate attributed after the
 				# server has been set up
 				if pMover.hasRequirement("SubAttrs"):

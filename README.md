@@ -5,7 +5,7 @@ Condor-related scripts for performing actual placement
 
 Creating a new placement test:
 A placement job is a Directed Acyclic Graph (DAG). A sample dag is defined in
-the file placement4.dag. Which like the following:
+the file placement4.dag. Which looks like the following:
 
     JOB A placement4-submit
     SCRIPT POST A /bin/false
@@ -44,4 +44,14 @@ To define new placement job
 The output file will be \<EXPERIMENT\>/placement4.log. Each successful placement will create a *writerecord* line.
 
 *Note*: iperf reports Kilobytes.  The other tools report Bytes.
+
+## System requirements
+
+The placement scripts try to deploy as much of their infrastructure on the fly as possible.  The following 
+must be set up a-priori, though:
+
+* Condor, configured with static slots, with each slot's DedicatedScheduler attribute pointing to a distinct schedd
+* TCP port 5001-5010 open
+* iperf installed
+* The openjdk java pre-installed (for fdt)
 

@@ -2,6 +2,8 @@
 import DataMover
 import SCPMover 
 import IperfMover
+import IrodsMover
+import IrodsPutMover
 import NetcatMover
 import FDTMover
 import CondorTools
@@ -45,6 +47,8 @@ def performPlacement(inputFile, outputFile):
 	## This does a a)iperf, b)fdt, c) scp, d) netcat, e) iperf 
   	## sequence of tests.  remove any of the (,,) to remove a test 
 	movers = [ ("iperf", IperfMover.Iperf(), ChirpTools.ChirpInfo("iperf")), 
+				("irods", IrodsMover.IrodsMover(), ChirpTools.ChirpInfo("irods")),
+				("irodsput", IrodsPutMover.IrodsPutMover(),ChirpTools.ChirpInfo("irodsput")),
 				("fdt", FDTMover.FDTMover(), ChirpTools.ChirpInfo("fdt")),
 				("scp", SCPMover.SCPMover(), ChirpTools.ChirpInfo("scp")),
 				("netcat", NetcatMover.Netcat(),

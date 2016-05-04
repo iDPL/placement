@@ -55,7 +55,7 @@ class IrodsMover(DataMover):
 
 	def client(self,server,port=20650):
 		#self.setArgs(["-c","%s" % server,"-p","%d" % int(port),"-f","k","-t","20"])
-		self.setArgs(["-v","-f","-N", "1", "test40MB"])
+		self.setArgs(["-v","-f","-N", "1", "test600MB"])
 		self.run()
 
 	def server(self):

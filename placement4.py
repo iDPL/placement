@@ -2,8 +2,11 @@
 import DataMover
 import SCPMover 
 import IperfMover
+import IrodsMover
+import IrodsPutMover
 import NetcatMover
 import FDTMover
+import UDTMover
 import CondorTools
 import ChirpTools 
 from IDPLException import *
@@ -45,10 +48,13 @@ def performPlacement(inputFile, outputFile):
 	## This does a a)iperf, b)fdt, c) scp, d) netcat, e) iperf 
   	## sequence of tests.  remove any of the (,,) to remove a test 
 	movers = [ ("iperf", IperfMover.Iperf(), ChirpTools.ChirpInfo("iperf")), 
-				("fdt", FDTMover.FDTMover(), ChirpTools.ChirpInfo("fdt")),
+				("irods", IrodsMover.IrodsMover(), ChirpTools.ChirpInfo("irods")),
+				("irodsput", IrodsPutMover.IrodsPutMover(), ChirpTools.ChirpInfo("irodsput")),
 				("scp", SCPMover.SCPMover(), ChirpTools.ChirpInfo("scp")),
 				("netcat", NetcatMover.Netcat(),
 						ChirpTools.ChirpInfo("netcat")),
+				("udt", UDTMover.UDTMover(),
+						ChirpTools.ChirpInfo("udt")),
 				("iperf", IperfMover.Iperf(), ChirpTools.ChirpInfo("iperf")) ] 
 
 	for name,pMover,pChirp in movers:
@@ -63,6 +69,7 @@ def performPlacement(inputFile, outputFile):
 				pChirp.postUserkey(pMover.getUserPubKeyFile())
 				pMover.setTimeout(clientTimeout)
 
+				pMover.setOutputFile(outputFile)
 				if pMover.hasRequirement("FileTransfer"):
 					pMover.setInputFile(inputFile)
 					md5 = "'%s'" % pMover.md5(inputFile)
@@ -70,7 +77,9 @@ def performPlacement(inputFile, outputFile):
 
 				# Client Start 
 				pChirp.ulog(iam,"start")
-				(host,port) = pChirp.getHostPort()
+				if not pMover.hasRequirement("NoPortsNeeded"):
+					(host,port) = pChirp.getHostPort()
+
 				# Get the subordinate attributed after the
 				# server has been set up
 				if pMover.hasRequirement("SubAttrs"):
@@ -101,6 +110,7 @@ def performPlacement(inputFile, outputFile):
 				
 		else:
 			iam = "server"
+			pMover.setInputFile(inputFile)
 			try:
 				# Set up the Server
 				pChirp.ulog(iam,"start")

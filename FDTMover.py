@@ -49,6 +49,8 @@ class FDTMover(DataMover):
 		self.user = nuser
 
 	def client(self,server,port=5001):
+		if self.isV6Test():
+			server="[%s]" % self.v6Names[server]
 		args = ["-jar", self.FDTJAR, "-noupdates" ]
 		args.extend(["-p", str(port)])
 		args.extend(["-c", server, self.inputFile])
@@ -65,4 +67,8 @@ class FDTMover(DataMover):
 		print "server: " , args
 		self.run()
 
+class FDTMover6(FDTMover):
+	def __init__(self, workDir=None):
+		super(FDTMover6,self).__init__()
+		self.setV6Test = True
 # vim: ts=4:sw=4:

@@ -50,7 +50,7 @@ log    = $(EXPERIMENT)/placement4.log
 
 +ParallelShutdownPolicy = "WAIT_FOR_ALL"
 
-transfer_input_files = TimedExec.py,IDPLException.py,CondorTools.py,ChirpTools.py,DataMover.py, SCPMover.py,NetcatMover.py,IperfMover.py, FDTMover.py, fdt.jar, empty
+transfer_input_files = TimedExec.py,IDPLException.py,CondorTools.py,ChirpTools.py,DataMover.py, SCPMover.py,NetcatMover.py,IperfMover.py, IrodsMover.py, IrodsPutMover.py, FDTMover.py, fdt.jar, UDTMover.py, udtxfer, empty
 
 should_transfer_files = YES
 when_to_transfer_output = ON_EXIT

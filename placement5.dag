@@ -1,5 +1,5 @@
 JOB A placement5-submit
-SCRIPT POST A /bin/false
+SCRIPT POST A post-update-repo.sh fl2mo /data/measurements/phil/mesh6 
 SCRIPT PRE A  createJobDirs.sh fl2mo
 VARS A EXPERIMENT="fl2mo" SRC_HOST="flashio-osg.calit2.optiputer.net" SRC_PATH="/home/idpl/100M" DST_HOST="mongo.mayer.optiputer.net" DST_PATH="100M" cron_hour="0-23/2" cron_minute="30"
 RETRY A 100000

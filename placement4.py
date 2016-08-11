@@ -48,13 +48,9 @@ def performPlacement(inputFile, outputFile):
 	## This does a a)iperf, b)fdt, c) scp, d) netcat, e) iperf 
   	## sequence of tests.  remove any of the (,,) to remove a test 
 	movers = [ ("iperf", IperfMover.Iperf(), ChirpTools.ChirpInfo("iperf")), 
-				("irods", IrodsMover.IrodsMover(), ChirpTools.ChirpInfo("irods")),
-				("irodsput", IrodsPutMover.IrodsPutMover(), ChirpTools.ChirpInfo("irodsput")),
 				("scp", SCPMover.SCPMover(), ChirpTools.ChirpInfo("scp")),
 				("netcat", NetcatMover.Netcat(),
 						ChirpTools.ChirpInfo("netcat")),
-				("udt", UDTMover.UDTMover(),
-						ChirpTools.ChirpInfo("udt")),
 				("iperf", IperfMover.Iperf(), ChirpTools.ChirpInfo("iperf")) ] 
 
 	for name,pMover,pChirp in movers:
@@ -110,7 +106,7 @@ def performPlacement(inputFile, outputFile):
 				
 		else:
 			iam = "server"
-			pMover.setInputFile(inputFile)
+			#pMover.setInputFile(inputFile)
 			try:
 				# Set up the Server
 				pChirp.ulog(iam,"start")
@@ -119,7 +115,7 @@ def performPlacement(inputFile, outputFile):
 					# read the public key of the connecting user
 					pMover.setAuthorizedKey(pChirp.getUserkey())
 
-				pMover.setOutputFile(outputFile)
+				#pMover.setOutputFile(outputFile)
 
 				if pMover.hasRequirement("SubAttrs"):
 					## set up some Chirped Attrs, that won't be read by

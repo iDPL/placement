@@ -31,6 +31,7 @@ FPLOGDIR=$(pwd)
 cd $PUBLISHDIR
 git clone --bare $FPLOGDIR $LOGDIR.git 
 cd $LOGDIR.git
+git config remote.origin.url $FPLOGDIR
 git config remote.origin.fetch "+*:*"
 git update-server-info
 popd

@@ -8,6 +8,9 @@ class CondorChirp():
 	def __init__(self):
 		resultcode,out,err=TimedExec.runTimedCmd(defaultTimeout,
 			["condor_config_val","LIBEXEC"])
+
+		#print "CondorChirp out =", out
+		#print "CondorChirp err =", err 
 		if (resultcode < 0):
 			raise IDPLExecption.CondorConfigValException("Chirp Init")
 		else:

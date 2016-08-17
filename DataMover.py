@@ -24,6 +24,7 @@ class DataMover(object):
 		self.tstart=time.time()
 		self.tend=time.time()
 		self.delta = -1
+		self.transferred = 0
 		## List of Strings that are "requirements" for a particular dataMover
 		self.requirements=[]
 		self.addRequirement("FileTransfer")
@@ -128,7 +129,7 @@ class DataMover(object):
 
 	def run(self):
 
-		if self.inputFile is not None:
+		if self.hasRequirement("FileTransfer") and self.inputFile is not None:
 			iFile = file(self.inputFile,'r')
 		else:
 			iFile = None

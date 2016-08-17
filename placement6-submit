@@ -1,0 +1,66 @@
+############
+#
+# Parallel Job 
+#
+############
+
+universe = parallel
+executable = placement6.py
+
+EXPERIMENT=gitclone
+SRC_HOST=murpa.rocksclusters.org
+SRC_PATH=/data/measurements/phil/mesh/ucsd2wisc.git
+DST_HOST=komatsu.chtc.wisc.edu
+DST_PATH=/zstore1/idpl/testreplicate/ucsd2wisc
+
+
+### Crondor Settings
+# A run is allowed to take this long (in seconds) to set up; otherwise
+# that run is skipped
+# cron_window=420
+
+# Try to run jobs on this schedule
+#cron_minute=10
+#cron_hour=24/2
+#
+# Keep running the job
+#on_exit_remove=false
+
+# Arguments are:
+# 1. File to send (on the sending host)
+# 2. Location to write file (on the receiving host)
+
+arguments = -i $(SRC_PATH) -o $(DST_PATH) -s gitclone
+
+## Enable Chirp
++WantIOProxy = true
+
+input   = /dev/null
+output = $(EXPERIMENT)/detail/placement6.out.$(Cluster).$(Node)
+error  = $(EXPERIMENT)/detail/placement6.err.$(Cluster).$(Node)
+log    = $(EXPERIMENT)/placement6.log
+# getenv = true
+
++SrcHost = "$(SRC_HOST)"
++SrcPath = "$(SRC_PATH)"
++DstHost = "$(DST_HOST)"
++DstPath = "$(DST_PATH)"
++ExperimentName = "$(EXPERIMENT):$(executable)"
++ExperimentDescription = "$(SRC_HOST) to $(DST_HOST) file $(SRC_PATH)"
+
++ParallelShutdownPolicy = "WAIT_FOR_ALL"
+
+transfer_input_files = TimedExec.py,IDPLException.py,CondorTools.py,ChirpTools.py,DataMover.py, SCPMover.py,NetcatMover.py,IperfMover.py, IrodsMover.py, IrodsPutMover.py, FDTMover.py, fdt.jar, UDTMover.py, GitClone.py, empty
+
+should_transfer_files = YES
+when_to_transfer_output = ON_EXIT
+                                                  
+machine_count = 1
+requirements = (Machine == "$(SRC_HOST)")
+transfer_output_files = empty
+queue
+
+machine_count = 1
+requirements = (Machine == "$(DST_HOST)")
+transfer_output_files = empty 
+queue

@@ -104,7 +104,6 @@ def performPlacement(inputFile, outputFile, sequence=[],timeout=serverTimeout,
 				# Get the pubkey and chirp it (only chirps if the mover
 				# explicitly defines key file during clientSetup() ) 
 				pChirp.postUserkey(pMover.getUserPubKeyFile())
-
 				pMover.setOutputFile(outputFile)
 				if pMover.hasRequirement("PathTransfer"):
 					pMover.setInputFile(inputFile)
@@ -152,12 +151,13 @@ def performPlacement(inputFile, outputFile, sequence=[],timeout=serverTimeout,
 			try:
 				# Set up the Server
 				pChirp.ulog(iam,"start")
+				if pMover.hasRequirement("FileTransfer"):
+					pMover.setOutputFile(outputFile)
+
 				pMover.serverSetup()
 				if pMover.hasRequirement("PubKey"):
 					# read the public key of the connecting user
 					pMover.setAuthorizedKey(pChirp.getUserkey())
-
-				# pMover.setOutputFile(outputFile)
 
 				if pMover.hasRequirement("SubAttrs"):
 					## set up some Chirped Attrs, that won't be read by

@@ -25,6 +25,7 @@ class DataMover(object):
 		self.tend=time.time()
 		self.delta = -1
 		self.transferred = 0
+		self.moverArgs = None
 		## List of Strings that are "requirements" for a particular dataMover
 		self.requirements=[]
 		self.addRequirement("FileTransfer")
@@ -70,8 +71,12 @@ class DataMover(object):
 	def setArgs(self,args):
 		self.args = args 
 
+	def setMoverArgs(self,moverargs):
+			"""This is an abstract method. Specific Movers should Override"""
+			pass
+
 	def setOutputHandler(self,stdout=None):
-		self.stdoutHandler = stdout 
+		self.stdoutHandler = stdout
 
 	def setErrHandler(self,stderr=None):
 		self.stderrHandler = stderr 

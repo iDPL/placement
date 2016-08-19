@@ -32,6 +32,7 @@ class DataMover(object):
 
 		## add v6 addresses for v4 names, used when performing a IPv6 test
 		self.v6Names = { \
+			'idpl.elab.cnic.cn':'2400:dd01:1011:1:92b1:1cff:fe0c:740d', \
 			'mickey.buaa.edu.cn':'2001:da8:203:d406:16da:e9ff:fef9:b68f', \
 			'komatsu.chtc.wisc.edu':'2607:f388:107c:502::c', \
 			'flashio-osg.calit2.optiputer.net':'2607:f720:1700:31d::61', \

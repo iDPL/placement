@@ -115,7 +115,8 @@ def performPlacement(inputFile, outputFile):
 					# read the public key of the connecting user
 					pMover.setAuthorizedKey(pChirp.getUserkey())
 
-				#pMover.setOutputFile(outputFile)
+				if pMover.hasRequirement("FileTransfer"):
+					pMover.setOutputFile(outputFile)
 
 				if pMover.hasRequirement("SubAttrs"):
 					## set up some Chirped Attrs, that won't be read by

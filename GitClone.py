@@ -19,10 +19,22 @@ class GitClone(SCPMover):
 	def __init__(self, workDir=None):
 		super(GitClone,self).__init__()
 		self.GITexe = 'git' 
+		self.gitAction='clone'
 		self.deleteRequirement("FileTransfer")
 		self.addRequirement("PathTransfer")
 		self.addRequirement("PullSemantics")
 
+	def setMoverArgs(self,moverargs):
+		args=re.findall(r'gitclone:{(.*)}',moverargs)
+		print "GitClone.setMoverArgs:", args
+		# only support pull or clone
+		for a in args:
+			if a == 'pull' or a == 'clone':
+				self.gitAction=a
+		print self.gitAction
+			
+		
+		
 	def client(self,server,port=5001):
 		cwd = os.getcwd()
 		self.setExe(self.GITexe)
@@ -42,10 +54,19 @@ class GitClone(SCPMover):
 		#		server = "[%s]" % server 
 
 		# now create the arguments for git clone itself
-		args = ["clone",]
-		args.extend(["%s@%s:%s" % (self.user, server,self.inputFile)])
+		args = [self.gitAction,]
 		ofile = self.outputFile.replace("'","")
-		args.extend(["%s" % ofile])
+		remote="%s@%s:%s" % (self.user, server,self.inputFile)
+		if self.gitAction == 'clone':
+			args.extend([remote])
+			args.extend(["%s" % ofile])
+		else:
+			# This is a pull. chdir to the local repo, update the
+			# remote origin url and then pull
+			os.chdir(ofile)
+			cmd = [self.GITexe,"config","remote.origin.url",remote]
+			TimedExec.runTimedCmd(2,cmd)
+			
 		self.setArgs(args)
 		print "client: " , args
 		self.run()

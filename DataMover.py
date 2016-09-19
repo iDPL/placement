@@ -25,16 +25,19 @@ class DataMover(object):
 		self.tend=time.time()
 		self.delta = -1
 		self.transferred = 0
+		self.moverArgs = None
 		## List of Strings that are "requirements" for a particular dataMover
 		self.requirements=[]
 		self.addRequirement("FileTransfer")
 
 		## add v6 addresses for v4 names, used when performing a IPv6 test
 		self.v6Names = { \
+			'idpl.elab.cnic.cn':'2400:dd01:1011:1:92b1:1cff:fe0c:740d', \
 			'mickey.buaa.edu.cn':'2001:da8:203:d406:16da:e9ff:fef9:b68f', \
-			'komatsu.chtc.wisc.edu':'2607:f388:108e:2795::a', \
+			'komatsu.chtc.wisc.edu':'2607:f388:107c:502::c', \
 			'flashio-osg.calit2.optiputer.net':'2607:f720:1700:31d::61', \
-			'mongo.mayer.optiputer.net':'2607:f720:1700:1b32::6' }
+			'mongo.mayer.optiputer.net':'2607:f720:1700:1b32::6', \
+			'murpa.rocksclusters.org':'2607:f720:1400:1410:d267:e5ff:fe13:108f' }
 		# default tests to v4
 		self.v6Test = False
 
@@ -70,8 +73,12 @@ class DataMover(object):
 	def setArgs(self,args):
 		self.args = args 
 
+	def setMoverArgs(self,moverargs):
+			"""This is an abstract method. Specific Movers should Override"""
+			pass
+
 	def setOutputHandler(self,stdout=None):
-		self.stdoutHandler = stdout 
+		self.stdoutHandler = stdout
 
 	def setErrHandler(self,stderr=None):
 		self.stderrHandler = stderr 

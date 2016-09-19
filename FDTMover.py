@@ -64,6 +64,8 @@ class FDTMover(DataMover):
 		# put the server in debug mode to accept only one incoming connection
 		self.setArgs(args)
 		self.setPortRange(5001,5010)
+		if (os.path.isfile(self.outputFile)):
+			os.unlink(self.outputFile)
 		print "server: " , args
 		self.run()
 

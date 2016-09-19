@@ -22,8 +22,8 @@ import getpass
 import pwd
 
 ##### Configurables
-clientTimeout = 120
-serverTimeout = 120
+clientTimeout = 1200
+serverTimeout = 1200
 ##############
 
 chirp = ChirpTools.ChirpInfo("placement")
@@ -83,8 +83,7 @@ def isClient(procID, mover):
 ## *****************************
 ## Actually perform the placement 
 ## *****************************
-def performPlacement(inputFile, outputFile, sequence=[],timeout=serverTimeout,
-		moverargs=None):
+def performPlacement(inputFile, outputFile, sequence):
 
 	for testName in sequence: 
 		try:
@@ -93,8 +92,6 @@ def performPlacement(inputFile, outputFile, sequence=[],timeout=serverTimeout,
 			# test not defined in set of available movers 
 			chirp.ulog("startup","%s test is not defined in AvailableMovers" % testName) 
 			continue
-		pMover.setTimeout(timeout)
-		pMover.setMoverArgs(moverargs)
 		if isClient(os.environ['_CONDOR_PROCNO'],pMover):
 			iam = "client"
 			try:
@@ -104,6 +101,8 @@ def performPlacement(inputFile, outputFile, sequence=[],timeout=serverTimeout,
 				# Get the pubkey and chirp it (only chirps if the mover
 				# explicitly defines key file during clientSetup() ) 
 				pChirp.postUserkey(pMover.getUserPubKeyFile())
+				pMover.setTimeout(clientTimeout)
+
 				pMover.setOutputFile(outputFile)
 				if pMover.hasRequirement("PathTransfer"):
 					pMover.setInputFile(inputFile)
@@ -151,13 +150,12 @@ def performPlacement(inputFile, outputFile, sequence=[],timeout=serverTimeout,
 			try:
 				# Set up the Server
 				pChirp.ulog(iam,"start")
-				if pMover.hasRequirement("FileTransfer"):
-					pMover.setOutputFile(outputFile)
-
 				pMover.serverSetup()
 				if pMover.hasRequirement("PubKey"):
 					# read the public key of the connecting user
 					pMover.setAuthorizedKey(pChirp.getUserkey())
+
+				# pMover.setOutputFile(outputFile)
 
 				if pMover.hasRequirement("SubAttrs"):
 					## set up some Chirped Attrs, that won't be read by
@@ -166,6 +164,7 @@ def performPlacement(inputFile, outputFile, sequence=[],timeout=serverTimeout,
 					pChirp.postOutputfile(outputFile)
 					pChirp.postUser(pwd.getpwuid(os.geteuid()).pw_name)
 
+				pMover.setTimeout(serverTimeout)
 				pMover.setPortReporter(pChirp.postPort)
 				# Run it
 				pMover.server()
@@ -187,32 +186,18 @@ def performPlacement(inputFile, outputFile, sequence=[],timeout=serverTimeout,
 ## main routine
 ## *****************************
 
-def usage(listMovers=False):
-	print 'placement6.py [-l] [-s tstsequence ] [-a moverargs] [-t timeout] -i <inputfile> -o <outputfile>'
-	if not listMovers:
-		return
-	print "Available Tests:"
-	tsts = AvailableMovers.keys()
-	tsts.sort()
-	for tst in tsts:
-		print "%-8s : %s" % (tst, AvailableMovers[tst][0])
-
 def main(argv):
 	inputfile = ''
 	outputfile = ''
 	sequence = ("iperf",)
-	moverArgs = None
-	timeout = serverTimeout 
-	
 	try:
-		opts, args = getopt.getopt(argv,"lha:i:o:s:t:",
-				["args=","ifile=","ofile=","timeout="])
+		opts, args = getopt.getopt(argv,"lhi:o:s:",["ifile=","ofile="])
 	except getopt.GetoptError:
-		usage()
+		print 'placement4.py [-l] [-s tstsequence ] -i <inputfile> -o <outputfile>'
 		sys.exit(2)
 	for opt, arg in opts:
 		if opt == '-h':
-			usage()
+			print 'placement4.py [-l] -i <inputfile> -o <outputfile>'
 			sys.exit()
 		elif opt in ("-i", "--ifile"):
 			inputfile = arg
@@ -220,18 +205,17 @@ def main(argv):
 			outputfile = arg
 		elif opt in ("-s", "--sequence"):
 			sequence = arg.split(',')
-		elif opt in ("-t", "--timeout"):
-			timeout = int(arg)
-		elif opt in ("-a", "--args"):
-			moverArgs = arg 
 		elif opt in ("-l"):
-			usage(listMovers=True)
+			print "Available Tests:"
+			tsts = AvailableMovers.keys()
+			tsts.sort()
+			for tst in tsts:
+				print "%-8s : %s" % (tst, AvailableMovers[tst][0])
 			sys.exit(0)
-
 	print 'Input file is:', inputfile
 	print 'Output file is:', outputfile
 	print 'Test Sequence is:', sequence
-	performPlacement(inputfile,outputfile,sequence=sequence,timeout=timeout,moverargs=moverArgs)
+	performPlacement(inputfile,outputfile,sequence)
 
 
 if __name__ == "__main__":

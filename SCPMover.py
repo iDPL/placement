@@ -7,7 +7,6 @@ import hashlib
 import pwd
 import tempfile
 import TimedExec
-import re
 from IDPLException import *
 from DataMover import *
 
@@ -42,7 +41,7 @@ class SCPMover(DataMover):
 	def ssherr(self,pid,str):
 		""" stderr handler when running sshd under TimedExec """
 		sys.stderr.write("%d#: %s" %(pid,str))
-		if re.search("Bind.*failed",str) != None:
+		if str.find("bind failed") != -1:
 			raise PortInUseException("sshd", self.port)
 
 	def setAuthorizedKey(self,key):

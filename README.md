@@ -8,7 +8,7 @@ A placement job is a Directed Acyclic Graph (DAG). A sample dag is defined in
 the file placement4.dag. Which looks like the following:
 
     JOB A placement4-submit
-    SCRIPT POST A /bin/false
+    SCRIPT POST A post-update-repo.sh fl2mo /home/measurements/local 
     SCRIPT PRE A  createJobDirs.sh fl2mo
     VARS A EXPERIMENT="fl2mo" SRC_HOST="flashio-osg.calit2.optiputer.net" SRC_PATH="/home/idpl/100M" DST_HOST="mongo.mayer.optiputer.net" DST_PATH="100M" cron_hour="0-23/2" cron_minute="30"
     RETRY A 100000

@@ -33,6 +33,7 @@ AvailableMovers ={
     'fdt': ("Use Monalisa FDT IPv4",("fdt", FDTMover.FDTMover(), ChirpTools.ChirpInfo("fdt"))),
     'fdt6': ("Use Monalisa FDT IPv6",("fdt6", FDTMover.FDTMover6(), ChirpTools.ChirpInfo("fdt6"))),
     'gitclone': ("Use GIT and SSH to clone",("gitclone", GitClone.GitClone(), ChirpTools.ChirpInfo("gitclone"))),
+    'gitclone6': ("Use GIT and SSH to clone IPv6",("gitclone6", GitClone.GitClone6(), ChirpTools.ChirpInfo("gitclone6"))),
 	'iperf': ("Network test using iperf IPv4",("iperf", IperfMover.Iperf(), ChirpTools.ChirpInfo("iperf"))), 
     'iperf6':("Network test using iperf IPv6",("iperf6", IperfMover.Iperf6(), ChirpTools.ChirpInfo("iperf6"))), 
     'irods': ("Download data from Existing IRODs server",("irods", IrodsMover.IrodsMover(), ChirpTools.ChirpInfo("irods"))),

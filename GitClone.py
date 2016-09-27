@@ -48,15 +48,18 @@ class GitClone(SCPMover):
 		f.close()
 		# Tell git to use our wrapper script
 		os.environ['GIT_SSH'] = self.gitssh[1]
-		# if self.isV6Test():
-		#	server = self.v6Names[server]
-		#	if server.find(":") >= 0:
-		#		server = "[%s]" % server 
-
 		# now create the arguments for git clone itself
 		args = [self.gitAction,]
 		ofile = self.outputFile.replace("'","")
-		remote="%s@%s:%s" % (self.user, server,self.inputFile)
+		if self.isV6Test():
+			server = self.v6Names[server]
+		# Versions of git are broken in handling v6 literal addresses
+		# [user@0000:1111::0] styled URL seems to work
+		if self.isV6Test() and server.find(":") >= 0:
+			remote="[%s@%s]:%s" % (self.user, server,self.inputFile)
+		else:
+			remote="%s@%s:%s" % (self.user, server,self.inputFile)
+
 		if self.gitAction == 'clone':
 			args.extend([remote])
 			args.extend(["%s" % ofile])

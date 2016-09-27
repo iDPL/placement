@@ -15,9 +15,9 @@ MOVERARGS=gitclone:{pull}
 #MOVERARGS=gitclone:{clone}
 
 DST_HOST=murpa.rocksclusters.org
-DST_PATH=/zstore2/measurements/wisc.edu/phil/mesh/wisc2ucsd
-SRC_HOST=komatsu.chtc.wisc.edu
-SRC_PATH=/zstore1/idpl/measurements/komatsu.chtc.wisc.edu/phil/mesh/wisc2ucsd.git
+DST_PATH=/zstore2/measurements/buaa.edu/zwzhang/buaa2ucsd4
+SRC_HOST=mickey.buaa.edu.cn
+SRC_PATH=/measurements/local/zwzhang/mesh/buaa2ucsd4.git
 
 
 
@@ -37,7 +37,7 @@ SRC_PATH=/zstore1/idpl/measurements/komatsu.chtc.wisc.edu/phil/mesh/wisc2ucsd.gi
 # 1. File to send (on the sending host)
 # 2. Location to write file (on the receiving host)
 
-arguments = -i $(SRC_PATH) -o $(DST_PATH) -s gitclone -t $(TIMEOUT) -a $(MOVERARGS)
+arguments = -i $(SRC_PATH) -o $(DST_PATH) -s gitclone6 -t $(TIMEOUT) -a $(MOVERARGS)
 
 ## Enable Chirp
 +WantIOProxy = true

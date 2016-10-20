@@ -70,7 +70,7 @@ class Iperf6(Iperf):
 		self.setV6Test(True)
 
 	def client(self,server,port=5001):
-		self.setArgs(["-V", "-c","%s" % self.v6Names[server],"-p","%d" % int(port),"-f","k"])
+		self.setArgs(["-V", "-c","%s" % self.v6Names[server],"-p","%d" % int(port),"-f","k","-t", "20"])
 		self.run()
 
 	def server(self):

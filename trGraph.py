@@ -7,13 +7,28 @@
 import json
 import sys
 def dotOutput(nodes,edges):
-	graph = 'digraph G { \n'
-	for (fr,to) in edges:
-		graph += '\"%s\"-> \"%s\"\n' % (fr,to)
-	for (n,terminal) in nodes:
+	graph = 'digraph Traceroute { \n'
+	graph += '   label="IDPL Traceroute Display";\n'
+	subgraph = 'subgraph v4 { \n '
+	subgraph += '   label="IPv4 Traceroute Display";\n'
+	subgraph6 = 'subgraph v6 { \n '
+	subgraph6 += '   label="IPv6 Traceroute Display";\n'
+	for (fr,to,v6) in edges:
+		edge = '\"%s\"-> \"%s\"\n' % (fr,to)
+		if v6:
+			subgraph6 += edge
+		else:
+			subgraph += edge
+	for (n,terminal,v6) in nodes:
 		color = "green" if terminal else "lightblue"
-		graph += '\"%s\" [style=filled fillcolor=%s]\n' % (n,color)
-	graph += "}"
+		node = '\"%s\" [style=filled fillcolor=%s]\n' % (n,color)
+		if v6:
+			subgraph6 += node
+		else:
+			subgraph += node
+	subgraph += "} \n"
+	subgraph6 += "}\n"
+	graph += subgraph6 + subgraph + "}"
 	return graph
 
 
@@ -28,8 +43,8 @@ for record in records:
 	v6 = record['v6']
 	fr = record['src'] if not v6 else "%s-v6" %  record['src'] 
 	dst = record['dest'] if not v6 else "%s-v6" % record['dest'] 
-	nodes.add((fr,True))
-	nodes.add((dst,True))
+	nodes.add((fr,True,v6))
+	nodes.add((dst,True,v6))
 	nrec = len(record['path'])
 	n = 0
 	for hop in record['path']:
@@ -37,10 +52,10 @@ for record in records:
 		if len(hop) > 2:
 			node = hop[1]
 			if n != nrec:
-				nodes.add((node,False))
-				edges.add((fr,node))
+				nodes.add((node,False,v6))
+				edges.add((fr,node,v6))
 			else:
-				edges.add((fr,dst))
+				edges.add((fr,dst,v6))
 			fr = node
 
 print dotOutput(nodes,edges)

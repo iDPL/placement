@@ -16,9 +16,9 @@ MOVERARGS=gitclone:{pull}
 
 DST_HOST=murpa.rocksclusters.org
 DST_PATH=/zstore2/measurements/buaa.edu/zwzhang/buaa2ucsd4
-SRC_HOST=mickey.buaa.edu.cn
+SRC_HOST=idpl.elab.cnic.cn
 SRC_PATH=/measurements/local/zwzhang/mesh/buaa2ucsd4.git
-TESTSEQUENCE = gitclone
+TESTSEQUENCE = traceroute,traceroute6,iperf,iperf6 
 
 
 
@@ -38,7 +38,7 @@ TESTSEQUENCE = gitclone
 # 1. File to send (on the sending host)
 # 2. Location to write file (on the receiving host)
 
-arguments = -i $(SRC_PATH) -o $(DST_PATH) -s $(TESTSEQUENCE) -t $(TIMEOUT) -a $(MOVERARGS)
+arguments = -i $(SRC_PATH) -o $(DST_PATH) -s $(TESTSEQUENCE) -t $(TIMEOUT) -a $(MOVERARGS) --src $(SRC_HOST) --dest $(DST_HOST)
 
 ## Enable Chirp
 +WantIOProxy = true
@@ -58,7 +58,7 @@ log    = $(EXPERIMENT)/placement6.log
 
 +ParallelShutdownPolicy = "WAIT_FOR_ALL"
 
-transfer_input_files = TimedExec.py,IDPLException.py,CondorTools.py,ChirpTools.py,DataMover.py, SCPMover.py,NetcatMover.py,IperfMover.py, IrodsMover.py, IrodsPutMover.py, FDTMover.py, fdt.jar, UDTMover.py, GitClone.py, empty
+transfer_input_files = TimedExec.py,IDPLException.py,CondorTools.py,ChirpTools.py,DataMover.py, SCPMover.py,NetcatMover.py,IperfMover.py, IrodsMover.py, IrodsPutMover.py, FDTMover.py, fdt.jar, UDTMover.py, GitClone.py, TracerouteMover.py, empty
 
 should_transfer_files = YES
 when_to_transfer_output = ON_EXIT

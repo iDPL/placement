@@ -21,6 +21,8 @@ class DataMover(object):
 		self.portReporter = Reporter().noReport
 		self.inputFile = None
 		self.outputFile = None
+		self.src = None
+		self.dest = None
 		self.tstart=time.time()
 		self.tend=time.time()
 		self.delta = -1
@@ -59,6 +61,12 @@ class DataMover(object):
 	def isV6Test(self):
 		return self.v6Test
 
+	def getSrc(self):
+		return self.src
+
+	def getDest(self):
+		return self.dest
+
 	##  Various Setters
 	def setPortRange(self,low,high):
 		self.lowPort = low
@@ -72,6 +80,12 @@ class DataMover(object):
 
 	def setArgs(self,args):
 		self.args = args 
+
+	def setSrc(self,src):
+		self.src = src 
+
+	def setDest(self,dest):
+		self.dest = dest 
 
 	def setMoverArgs(self,moverargs):
 			"""This is an abstract method. Specific Movers should Override"""

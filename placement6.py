@@ -10,6 +10,7 @@ import UDTMover
 import CondorTools
 import ChirpTools 
 import GitClone
+import TracerouteMover
 from IDPLException import *
 import os
 import sys
@@ -20,6 +21,7 @@ import getopt
 import subprocess
 import getpass
 import pwd
+import json
 
 ##### Configurables
 clientTimeout = 120
@@ -42,6 +44,10 @@ AvailableMovers ={
 	'scp6': ("SCP using IPv6",("scp6", SCPMover.SCPMover6(), ChirpTools.ChirpInfo("scp6"))),
     'netcat': ("Raw Socket file copy from client to server", ("netcat", NetcatMover.Netcat(), ChirpTools.ChirpInfo("netcat"))),
 	'netcat6':("Raw Socket file copy using IPv6", ("netcat6", NetcatMover.Netcat6(), ChirpTools.ChirpInfo("netcat6"))),
+    'traceroute': ("traceroute bidirectional", ("traceroute",
+TracerouteMover.Traceroute(), ChirpTools.ChirpInfo("traceroute"))),
+	'traceroute6':("traceroute bidirectional IPv6", ("traceroute6",
+TracerouteMover.Traceroute6(), ChirpTools.ChirpInfo("traceroute6"))),
     'udt': ("UDT protocol to copy from client to server",  ("udt", UDTMover.UDTMover(), ChirpTools.ChirpInfo("udt")))
 }
 def writeRecord(tag, src,dest,start,end,md5_equal,duration,kbytes):
@@ -55,7 +61,15 @@ def writeRecord(tag, src,dest,start,end,md5_equal,duration,kbytes):
 	logmessage += ",%f,%f,%d,%f" % (start,end,md5_equal,duration)
 	logmessage += ",%d" % (kbytes)
 	chirp.ulog("writerecord", logmessage)
-
+	
+def writeRoute(mover,src):
+	"""Write out the traceroute information. Does nothing if the mover doesn't
+	have the exportRoute method"""
+	try:
+		chirp.ulog("TRACEROUTE",mover.exportRoute(src))
+	except:
+	 	pass	
+	
 def isClient(procID, mover):
     # procID - processID
 	# 		0 -  this  is the SRC in the submit file
@@ -85,7 +99,7 @@ def isClient(procID, mover):
 ## Actually perform the placement 
 ## *****************************
 def performPlacement(inputFile, outputFile, sequence=[],timeout=serverTimeout,
-		moverargs=None):
+		moverargs=None, src=None, dest=None):
 
 	for testName in sequence: 
 		try:
@@ -94,6 +108,8 @@ def performPlacement(inputFile, outputFile, sequence=[],timeout=serverTimeout,
 			# test not defined in set of available movers 
 			chirp.ulog("startup","%s test is not defined in AvailableMovers" % testName) 
 			continue
+		pMover.setSrc(src)
+		pMover.setDest(dest)
 		pMover.setTimeout(timeout)
 		pMover.setMoverArgs(moverargs)
 		if isClient(os.environ['_CONDOR_PROCNO'],pMover):
@@ -117,6 +133,9 @@ def performPlacement(inputFile, outputFile, sequence=[],timeout=serverTimeout,
 				pChirp.ulog(iam,"start")
 				if not pMover.hasRequirement("NoPortsNeeded"):
 					(host,port) = pChirp.getHostPort()
+				else:
+					host = pMover.getDest()
+					port = None
 
 				# Get the subordinate attributed after the
 				# server has been set up
@@ -138,6 +157,7 @@ def performPlacement(inputFile, outputFile, sequence=[],timeout=serverTimeout,
 				(tstart,tend,delta) = pMover.getTimers()
 				writeRecord(name,socket.getfqdn(),host,tstart,tend,ok,delta,
 					int(transferred))
+				writeRoute(pMover,host)
 
 				# Finish (client)
 				pChirp.ulog(iam,"end")
@@ -175,6 +195,8 @@ def performPlacement(inputFile, outputFile, sequence=[],timeout=serverTimeout,
 					pChirp.postMD5(pMover.md5(outputFile))
 
 				# Finish
+				
+				writeRoute(pMover,src)
 				pChirp.ulog(iam,"end")
 			except IDPLException, e:
 				pChirp.ulog(iam,"error %s" % e.message)
@@ -189,7 +211,7 @@ def performPlacement(inputFile, outputFile, sequence=[],timeout=serverTimeout,
 ## *****************************
 
 def usage(listMovers=False):
-	print 'placement6.py [-l] [-s tstsequence ] [-a moverargs] [-t timeout] -i <inputfile> -o <outputfile>'
+	print 'placement6.py [-l] [-s tstsequence ] [-a moverargs] [-t timeout] [--src <source host>] [--dest <dest host>] -i <inputfile> -o <outputfile>'
 	if not listMovers:
 		return
 	print "Available Tests:"
@@ -207,7 +229,7 @@ def main(argv):
 	
 	try:
 		opts, args = getopt.getopt(argv,"lha:i:o:s:t:",
-				["args=","ifile=","ofile=","timeout="])
+				["args=","ifile=","ofile=","timeout=","src=","dest="])
 	except getopt.GetoptError:
 		usage()
 		sys.exit(2)
@@ -225,6 +247,10 @@ def main(argv):
 			timeout = int(arg)
 		elif opt in ("-a", "--args"):
 			moverArgs = arg 
+		elif opt in ("--src"):
+			src = arg 
+		elif opt in ("--dest"):
+			dest = arg 
 		elif opt in ("-l"):
 			usage(listMovers=True)
 			sys.exit(0)
@@ -232,8 +258,7 @@ def main(argv):
 	print 'Input file is:', inputfile
 	print 'Output file is:', outputfile
 	print 'Test Sequence is:', sequence
-	performPlacement(inputfile,outputfile,sequence=sequence,timeout=timeout,moverargs=moverArgs)
-
+	performPlacement(inputfile,outputfile,sequence=sequence,timeout=timeout,moverargs=moverArgs,src=src, dest=dest) 
 
 if __name__ == "__main__":
 	main(sys.argv[1:])

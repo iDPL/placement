@@ -7,6 +7,7 @@ import IrodsPutMover
 import NetcatMover
 import FDTMover
 import UDTMover
+import GridFTPMover
 import CondorTools
 import ChirpTools 
 from IDPLException import *
@@ -51,6 +52,8 @@ def performPlacement(inputFile, outputFile):
 				("scp", SCPMover.SCPMover(), ChirpTools.ChirpInfo("scp")),
 				("netcat", NetcatMover.Netcat(),
 						ChirpTools.ChirpInfo("netcat")),
+				("gridftp", GridFTPMover.GridFTPMover(),
+						ChirpTools.ChirpInfo("gridftp")),
 				("iperf", IperfMover.Iperf(), ChirpTools.ChirpInfo("iperf")) ] 
 
 	for name,pMover,pChirp in movers:

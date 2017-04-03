@@ -17,6 +17,8 @@ fi
 pushd $LOGDIR
 git add --all
 git commit -m "Automatic update at `date`"
+# Garbage collect the local repo every single time
+git gc
 cd $PUBLISHREPO
 git fetch
 git update-server-info

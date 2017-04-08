@@ -1,0 +1,5 @@
+JOB A placement6-submit
+SCRIPT POST A post-update-repo.sh wisc2gce /home/phil/measurements/mesh
+SCRIPT PRE A  createJobDirs.sh wisc2gce
+VARS A EXPERIMENT="wisc2gce" SRC_HOST="komatsu.chtc.wisc.edu" SRC_PATH="/home/idpl/500M" DST_HOST="idpl-gce-west.c.focal-road-163817.internal" DST_HOST_DNS="126.234.196.104.bc.googleusercontent.com" DST_PATH="500M" cron_hour="0-23/2" cron_minute="30" TESTSEQUENCE="iperf,fdt,netcat,scp"
+RETRY A 100000

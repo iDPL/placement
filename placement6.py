@@ -114,6 +114,8 @@ def performPlacement(inputFile, outputFile, sequence=[],timeout=serverTimeout,
 		pMover.setMoverArgs(moverargs)
 		if isClient(os.environ['_CONDOR_PROCNO'],pMover):
 			iam = "client"
+			if src != None:
+				pChirp.setHost(src)
 			try:
 				# Set up the client
 				pChirp.clearUserkey() if pMover.hasRequirement("PubKey") else None 
@@ -168,6 +170,8 @@ def performPlacement(inputFile, outputFile, sequence=[],timeout=serverTimeout,
 				
 		else:
 			iam = "server"
+			if dest != None:
+				pChirp.setHost(dest)
 			# pMover.setInputFile(inputFile)
 			try:
 				# Set up the Server

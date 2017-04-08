@@ -4,7 +4,7 @@ import CondorTools
 
 class ChirpInfo(object):
 	""" Use Chirp jobAttrs to post host:port pairs """
-	def __init__(self,prefix):
+	def __init__(self,prefix,host=None):
 		self.prefix = prefix
 		self.chirp = CondorTools.CondorChirp()
 		self.jobAttr = "%sServer" % prefix
@@ -12,8 +12,14 @@ class ChirpInfo(object):
 		self.OutfileAttr = "%sOutfile" % prefix
 		self.UserkeyAttr = "%sUserkey" % prefix
 		self.UserAttr = "%sUser" % prefix
-		self.host = socket.getfqdn()
+		if host == None:
+			self.host = socket.getfqdn()
+		else: 
+			self.host = host
 
+	## Setter
+	def setHost(self,host):
+		self.host = host
 	## Generic logging
 	def ulog(self, who, message):
 		logMessage = "%s(%s) %s:%s" % (self.host,self.prefix,who,message)

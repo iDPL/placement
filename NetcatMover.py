@@ -33,7 +33,7 @@ class Netcat(DataMover):
 		sys.stdout.write("%d#: %s" %(pid,str))
 		raise PortInUseException("netcat", self.port)
 
-	def client(self,server,port=5011):
+	def client(self,server,port=5002):
 		self.setArgs(["%s" % server,"%d" % int(port)])
 		self.run()
 		if self.oFile is not None:
@@ -42,7 +42,7 @@ class Netcat(DataMover):
 	def server(self):
 		self.setArgs(["-d"])
 		self.setPortArg("-l")
-		self.setPortRange(5011,5020)
+		self.setPortRange(5002,5010)
 		self.run()
 		if self.oFile is not None:
 			self.oFile.close()
